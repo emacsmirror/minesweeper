@@ -51,11 +51,36 @@
 	   val
 	   minesweeper-field))
 
-  ;; (kill-all-local-variables)
-  ;; (use-local-map minesweeper-mode-map)
-  ;; (run-hooks 'minesweeper-mode-hook))
+(defun minesweeper-inform-around (x y)
+  "takes in a square, and increases the values of all its empty neighbors"
+  (mapcar '(lambda (position) (apply minesweeper-++ position))
+	  (minesweeper-neighbors x y)))
 
-;; (provide 'minesweeper-mode)
+(defun minesweeper-++ (x y)
+  "Increments the value at square (x, y), unless the square is a bomb"
+  (let ((val (minesweeper-view-mine x y)))
+    (unless (eq val 'X)
+      (minesweeper-set-mine x
+			    y
+			    (1+ val)))))
+
+(defun minesweeper-neighbors (x y)
+  "Returns a list of the neighbors of (x, y)."
+  (let ((neighbors nil))
+    (for newx (1- x) (1+ x) ;; make for loops work in Elisp
+	 (for newy (1- y) (1+ y)
+	      (unless (or (and (eq newx x)
+			       (eq newy y))
+			  (< newx 0)
+			  (< newy 0)
+			  (>= newx minesweeper-board-width)
+			  (>= newy minesweeper-board-height))
+		(push (list x y)
+		      neighbors))))
+    neighbors))
+
+
+  ;; (run-hooks 'minesweeper-mode-hook))
 
 ;; (defvar minesweeper-mode-hook nil)
 
