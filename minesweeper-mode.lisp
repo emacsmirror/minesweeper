@@ -94,11 +94,6 @@
 	    (apply 'minesweeper-++ position))
 	  (minesweeper-neighbors x y)))
 
-(defun minesweeper-inform-around (x y &opti)
-  (mapcar (lambda (position)
-	    (apply 'minesweeper-++ position))
-	  (minesweeper-neighbors x y)))
-
 (defun minesweeper-++ (x y &optional amount)
   ;; (minesweeper-set-mine x y 1))
   "Increments the value at square (x, y), unless the square is a bomb"
@@ -132,15 +127,6 @@
 	 (for x 0 (1- minesweeper-board-width)
 	      (insert-char (minesweeper-view-mine x y reveal) 1))
 	 (newline))))
-
-(defun minesweeper-to-character (val)
-  "Takes in a number or ?X, and returns its printable character."
-  val)
-  ;; (cond ((eq val ?X)
-  ;; 	 ?X)
-  ;; 	((eq val ?_)
-  ;; 	 ?_)
-  ;; 	(t (+ ?0 val))))
 
 (defun minesweeper-pick (x y &optional suppress-field)
   "Select the square at position (x, y) to reveal. A user-facing function."
