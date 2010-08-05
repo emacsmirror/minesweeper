@@ -128,7 +128,7 @@
 	      (insert-char (minesweeper-view-mine x y reveal) 1))
 	 (newline))))
 
-(defun minesweeper-pick (x y &optional suppress-field)
+(defun minesweeper-pick (x y &optional suppress-field) ;; Bug is here -- recursion is too deep: blows past max-list-eval-depth if you hit a sparse section of the field.
   "Select the square at position (x, y) to reveal. A user-facing function."
   (insert "called pick " (+ ?0 x) " " (+ ?0 y))
   (newline)
