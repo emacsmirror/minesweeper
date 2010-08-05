@@ -4,31 +4,46 @@
   (use-local-map minesweeper-mode-map)
   (toggle-read-only t))
 
-(defvar minesweeper-board-width 10
+(defvar minesweeper-board-width 0
   "The number of columns on the Minesweeper field.")
 
-(defvar minesweeper-board-height 10
+(defvar minesweeper-default-width 10
+  "The default board width")
+
+(defvar minesweeper-board-height 0
   "The number of rows on the Minesweeper field.")
 
-(defvar minesweeper-mines 10
+(defvar minesweeper-default-height 10
+  "The default board height.")
+
+(defvar minesweeper-mines 0
   "The number of mines on the Minesweeper field.")
+
+(defvar minesweeper-default-mines 10
+  "The default number of mines")
 
 (defvar minesweeper-field nil
   "The minefield itself. If a mine is in the square, ?X is stored. Otherwise, the number of mines in neighboring squares is stored.")
 
-(defvar minesweeper-filter nil
+(defvar minesweeper-reveals nil
   "Holds 't in (x, y) if (x, y) has been revealed")
+
+(defvar minesweeper-mines-left 0
+  "Holds the number of mines left. After 'minesweeper-init has been called, the user will win the game when this becomes zero again.")
 
 ;; (defvar minesweeper-first-move 't
 ;;   "If 't, the next move is the first move. So if a mine is selected, move that mine elsewhere") ;; Do this later; it's less important
 
-(defun minesweeper-init ()
+(defun minesweeper-init (&optional width height mines)
   "Begin a game of Minesweeper with a board that's 'width by 'height size containing 'mines mines."
-  (setq ;; minesweeper-board-width width
-	;; minesweeper-board-height height
-	;; minesweeper-mines mines
-   minesweeper-field (make-hash-table :test 'equal)
-   minesweeper-filter (make-hash-table :test 'equal))
+  (setq minesweeper-board-width (or width minesweeper-default-width)
+	minesweeper-board-height (or height minesweeper-default-height)
+	minesweeper-mines (or mines minesweeper-default-mines)
+	minesweeper-field (make-hash-table :test 'equal)
+	minesweeper-reveals (make-hash-table :test 'equal)
+	minesweeper-mines-left (- (* minesweeper-board-width
+				     minesweeper-board-height)
+				  minesweeper-mines))
   (minesweeper-fill-field)
   (minesweeper-print-field))
 
@@ -38,7 +53,7 @@
   (for x 0 minesweeper-board-width
        (for y 0 minesweeper-board-height
 	    (minesweeper-set-mine x y ?0)
-	    (minesweeper-set-filter x y nil)))
+	    (minesweeper-set-revealed x y nil)))
   (let ((mines-to-insert minesweeper-mines))
     (while (> mines-to-insert 0)
 	   (let ((x (random minesweeper-board-width))
@@ -63,15 +78,15 @@
 	   val
 	   minesweeper-field))
 
-(defun minesweeper-set-filter (x y val)
+(defun minesweeper-set-revealed (x y val)
   "Sets (x, y) in the filter to 'val"
   (puthash (list x y)
 	   val
-	   minesweeper-filter))
+	   minesweeper-reveals))
 
 (defun minesweeper-is-revealed (x y)
   (gethash (list x y)
-	   minesweeper-filter))
+	   minesweeper-reveals))
 
 (defun minesweeper-inform-around (x y &optional amount)
   "takes in a square, and increases the values of all its empty neighbors"
@@ -129,29 +144,60 @@
 
 (defun minesweeper-pick (x y &optional suppress-field)
   "Select the square at position (x, y) to reveal. A user-facing function."
+  (insert "called pick " (+ ?0 x) " " (+ ?0 y))
+  (newline)
   (unless (minesweeper-is-revealed x y)
     (let ((val (minesweeper-view-mine x y 't)))
       (if (eq val ?X)
-	  (minesweeper-end-game x y)
+	  (minesweeper-lose-game x y)
 	(progn
-	  (minesweeper-set-filter x y 't)
+	  (minesweeper-set-revealed x y 't)
 	  (when (eq val ?0)
 	    (minesweeper-pick-around x y))
-	  (unless suppress-field
-	    (minesweeper-print-field)))))))
+	  (if (eq minesweeper-mines-left 0)
+	      (mineweeper-win-game)
+	    (unless suppress-field
+	      (minesweeper-print-field))))))))
 
 
 (defun minesweeper-pick-around (x y)
   "Pick all the squares around (x, y). As a precondition, (x, y) should be zero."
-  (mapcar '(lambda (position) (minesweeper-pick (car position) (cadr position) 't))
+  (insert "called pick-around " (+ ?0 x) " " (+ ?0 y))
+  (newline)
+  (mapcar '(lambda (position) (insert "called pick-around-helper " (+ ?0 x) " " (+ ?0 y)) (newline) (minesweeper-pick (car position) (cadr position) 't))
 	  (minesweeper-neighbors x y)))
 
-(defun minesweeper-end-game (x y)
+(defun minesweeper-alternate-pick (x y) ;; DOES NOT WORK -- INFINITE LOOP!
+  (unless (minesweeper-is-revealed x y)
+    (let ((val (minesweeper-view-mine x y 't))
+	  (stack (list (list x y))))
+      (if (eq val ?X)
+	  (minesweeper-lose-game x y)
+	(progn (when (eq val ?0)
+		 (while stack
+		   (unless (apply 'minesweeper-is-revealed (car stack))
+		     (minesweeper-set-revealed x y 't)
+		     (mapcar (lambda (position) (push position stack))
+			     (minesweeper-neighbors x y)))
+		   (pop stack)))
+	       (if (eq minesweeper-mines-left 0)
+		   (minesweeper-win-game)
+		 (minesweeper-print-field)))))))
+
+(defun minesweeper-lose-game (x y)
   (let ((inhibit-read-only t))
     (erase-buffer)
     (insert "You lose. You chose spot (" (+ x ?0) ", " (+ y ?0) "), which was a bomb.")
     (newline 2)
     (minesweeper-print-field 't)))
+
+(defun minesweeper-win-game ()
+  (let ((inhibit-read-only t))
+    (erase-buffer)
+    (minesweeper-print-field 't)
+    (newline 2)
+    (insert "You win! Congrats!")))
+
 
 (defmacro for (var init end &rest body)
   "helper function. executes 'body repeatedly, with 'var assigned values starting at 'init, and ending at 'end, increasing by one each iteration."
