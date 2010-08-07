@@ -31,6 +31,9 @@
 (defvar minesweeper-mines-left 0
   "Holds the number of mines left. After 'minesweeper-init has been called, the user will win the game when this becomes zero again.")
 
+(defvar *debug* nil
+  "when 't, print debugging information.")
+
 ;; (defvar minesweeper-first-move 't
 ;;   "If 't, the next move is the first move. So if a mine is selected, move that mine elsewhere") ;; Do this later; it's less important
 
@@ -130,8 +133,8 @@
 
 (defun minesweeper-pick (x y &optional suppress-field) ;; Bug is here -- recursion is too deep: blows past max-list-eval-depth if you hit a sparse section of the field.
   "Select the square at position (x, y) to reveal. A user-facing function."
-  (insert "called pick " (+ ?0 x) " " (+ ?0 y))
-  (newline)
+  (debug (insert "called pick " (+ ?0 x) " " (+ ?0 y))
+	 (newline))
   (unless (minesweeper-is-revealed x y)
     (let ((val (minesweeper-view-mine x y 't)))
       (if (eq val ?X)
@@ -139,18 +142,23 @@
 	(progn
 	  (minesweeper-set-revealed x y 't)
 	  (when (eq val ?0)
-	    (minesweeper-pick-around x y))
-	  (if (eq minesweeper-mines-left 0)
-	      (mineweeper-win-game)
+	    (let ((max-lisp-eval-depth (* 25 minesweeper-board-width minesweeper-board-height)))
+	      (minesweeper-pick-around x y)))
+	  (if (eq (setq minesweeper-mines-left
+			(1- minesweeper-mines-left))
+		  0)
+	      (minesweeper-win-game)
 	    (unless suppress-field
 	      (minesweeper-print-field))))))))
 
 
 (defun minesweeper-pick-around (x y)
   "Pick all the squares around (x, y). As a precondition, (x, y) should be zero."
-  (insert "called pick-around " (+ ?0 x) " " (+ ?0 y))
-  (newline)
-  (mapcar '(lambda (position) (insert "called pick-around-helper " (+ ?0 x) " " (+ ?0 y)) (newline) (minesweeper-pick (car position) (cadr position) 't))
+  (debug (insert "called pick-around " (+ ?0 x) " " (+ ?0 y))
+	 (newline))
+  (mapcar '(lambda (position)
+	     (insert "called pick-around-helper " (+ ?0 x) " " (+ ?0 y)) (newline)
+	     (minesweeper-pick (car position) (cadr position) 't))
 	  (minesweeper-neighbors x y)))
 
 (defun minesweeper-alternate-pick (x y) ;; DOES NOT WORK -- INFINITE LOOP!
@@ -161,11 +169,10 @@
 	  (minesweeper-lose-game x y)
 	(progn (when (eq val ?0)
 		 (while stack
-		   (unless (apply 'minesweeper-is-revealed (car stack))
+		   (unless (apply 'minesweeper-is-revealed (pop stack))
 		     (minesweeper-set-revealed x y 't)
 		     (mapcar (lambda (position) (push position stack))
-			     (minesweeper-neighbors x y)))
-		   (pop stack)))
+			     (minesweeper-neighbors x y)))))
 	       (if (eq minesweeper-mines-left 0)
 		   (minesweeper-win-game)
 		 (minesweeper-print-field)))))))
@@ -192,6 +199,10 @@
      (while (<= ,var end-val)
        ,@body
        (setq ,var (1+ ,var)))))
+
+(defmacro debug (&rest body)
+  `(when *debug*
+     ,@body))
 
 
 
