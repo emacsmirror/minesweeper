@@ -2,7 +2,10 @@
 \\{minesweeper-mode-map}"
   (kill-all-local-variables)
   (use-local-map minesweeper-mode-map)
-  (toggle-read-only t))
+  (toggle-read-only t)
+  (minesweeper-init)
+  (erase-buffer)
+  (minesweeper-print-field))
 
 (defvar minesweeper-board-width 0
   "The number of columns on the Minesweeper field.")
@@ -28,14 +31,14 @@
 (defvar minesweeper-reveals nil
   "Holds 't in (x, y) if (x, y) has been revealed")
 
-(defvar minesweeper-mines-left 0
+(defvar minesweeper-blanks-left 0
   "Holds the number of mines left. After 'minesweeper-init has been called, the user will win the game when this becomes zero again.")
 
 (defvar *debug* nil
   "when 't, print debugging information.")
 
-;; (defvar minesweeper-first-move 't
-;;   "If 't, the next move is the first move. So if a mine is selected, move that mine elsewhere") ;; Do this later; it's less important
+(defvar minesweeper-first-move 't
+  "If 't, the next move is the first move. So if a mine is selected, move that mine elsewhere")
 
 (defun minesweeper-init (&optional width height mines)
   "Begin a game of Minesweeper with a board that's 'width by 'height size containing 'mines mines."
@@ -44,11 +47,11 @@
 	minesweeper-mines (or mines minesweeper-default-mines)
 	minesweeper-field (make-hash-table :test 'equal)
 	minesweeper-reveals (make-hash-table :test 'equal)
-	minesweeper-mines-left (- (* minesweeper-board-width
+	minesweeper-blanks-left (- (* minesweeper-board-width
 				     minesweeper-board-height)
-				  minesweeper-mines))
-  (minesweeper-fill-field)
-  (minesweeper-print-field))
+				  minesweeper-mines)
+	minesweeper-first-move 't)
+  (minesweeper-fill-field))
 
 
 (defun minesweeper-fill-field ()
@@ -135,6 +138,12 @@
   "Select the square at position (x, y) to reveal. A user-facing function."
   (debug (insert "called pick " (+ ?0 x) " " (+ ?0 y))
 	 (newline))
+  (when minesweeper-first-move
+    (if (eq (minesweeper-view-mine x y 't)
+	    ?X)
+	(progn (minesweeper-init)
+	       (minesweeper-pick x y))
+      (setq minesweeper-first-move nil)))
   (unless (minesweeper-is-revealed x y)
     (let ((val (minesweeper-view-mine x y 't)))
       (if (eq val ?X)
@@ -144,8 +153,8 @@
 	  (when (eq val ?0)
 	    (let ((max-lisp-eval-depth (* 25 minesweeper-board-width minesweeper-board-height)))
 	      (minesweeper-pick-around x y)))
-	  (if (eq (setq minesweeper-mines-left
-			(1- minesweeper-mines-left))
+	  (if (eq (setq minesweeper-blanks-left
+			(1- minesweeper-blanks-left))
 		  0)
 	      (minesweeper-win-game)
 	    (unless suppress-field
@@ -157,7 +166,7 @@
   (debug (insert "called pick-around " (+ ?0 x) " " (+ ?0 y))
 	 (newline))
   (mapcar '(lambda (position)
-	     (insert "called pick-around-helper " (+ ?0 x) " " (+ ?0 y)) (newline)
+	     (debug (insert "called pick-around-helper " (+ ?0 x) " " (+ ?0 y)) (newline))
 	     (minesweeper-pick (car position) (cadr position) 't))
 	  (minesweeper-neighbors x y)))
 
@@ -173,7 +182,7 @@
 		     (minesweeper-set-revealed x y 't)
 		     (mapcar (lambda (position) (push position stack))
 			     (minesweeper-neighbors x y)))))
-	       (if (eq minesweeper-mines-left 0)
+	       (if (eq minesweeper-blanks-left 0)
 		   (minesweeper-win-game)
 		 (minesweeper-print-field)))))))
 
