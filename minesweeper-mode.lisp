@@ -177,8 +177,12 @@
 (defun minesweeper-choose ()
   "This is the function called when the user picks a mine."
   (interactive)
-  (minesweeper-pick (current-column)
-		    (minesweeper-current-line)))
+  (let ((col (current-column))
+	(row (minesweeper-current-line)))
+    (minesweeper-pick col row)
+    (goto-char (point-min))
+    (forward-char col)
+    (forward-line row)))
 
 
 (defun minesweeper-pick-around (x y)
