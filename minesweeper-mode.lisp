@@ -182,7 +182,7 @@
     (minesweeper-pick col row)
     (goto-char (point-min))
     (forward-char col)
-    (forward-line row)))
+    (next-line row)))
 
 
 (defun minesweeper-pick-around (x y)
