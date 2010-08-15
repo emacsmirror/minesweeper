@@ -1,10 +1,19 @@
+(defvar minesweeper-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "\ ") 'minesweeper-choose)
+    (define-key map (kbd "x") 'minesweeper-choose)
+    (define-key map (kbd "C-c C-v") 'minesweeper-choose)
+    (define-key map "\r" 'minesweeper-choose)
+    (define-key map (kbd "C-c C-c") 'minesweeper-choose)
+    map))
+
+
 (define-derived-mode minesweeper-mode nil "Minesweeper" "Major mode for playing Minesweeper in Emacs.
 \\{minesweeper-mode-map}"
   (kill-all-local-variables)
   (use-local-map minesweeper-mode-map)
   (toggle-read-only t)
   (minesweeper-init)
-  (erase-buffer)
   (minesweeper-print-field))
 
 (defvar minesweeper-board-width 0
@@ -39,6 +48,7 @@
 
 (defvar minesweeper-first-move 't
   "If 't, the next move is the first move. So if a mine is selected, move that mine elsewhere")
+
 
 (defun minesweeper-init (&optional width height mines)
   "Begin a game of Minesweeper with a board that's 'width by 'height size containing 'mines mines."
@@ -129,6 +139,7 @@
 (defun minesweeper-print-field (&optional reveal)
   "Print out the minefield."
   (let ((inhibit-read-only t))
+    (erase-buffer)
     (for y 0 (1- minesweeper-board-height)
 	 (for x 0 (1- minesweeper-board-width)
 	      (insert-char (minesweeper-view-mine x y reveal) 1))
@@ -136,29 +147,38 @@
 
 (defun minesweeper-pick (x y &optional suppress-field) ;; Bug is here -- recursion is too deep: blows past max-list-eval-depth if you hit a sparse section of the field.
   "Select the square at position (x, y) to reveal. A user-facing function."
-  (debug (insert "called pick " (+ ?0 x) " " (+ ?0 y))
-	 (newline))
-  (when minesweeper-first-move
-    (if (eq (minesweeper-view-mine x y 't)
-	    ?X)
-	(progn (minesweeper-init)
-	       (minesweeper-pick x y))
-      (setq minesweeper-first-move nil)))
-  (unless (minesweeper-is-revealed x y)
-    (let ((val (minesweeper-view-mine x y 't)))
-      (if (eq val ?X)
-	  (minesweeper-lose-game x y)
-	(progn
-	  (minesweeper-set-revealed x y 't)
-	  (when (eq val ?0)
-	    (let ((max-lisp-eval-depth (* 25 minesweeper-board-width minesweeper-board-height)))
-	      (minesweeper-pick-around x y)))
-	  (if (eq (setq minesweeper-blanks-left
-			(1- minesweeper-blanks-left))
-		  0)
-	      (minesweeper-win-game)
-	    (unless suppress-field
-	      (minesweeper-print-field))))))))
+  (if (or (>= x minesweeper-board-width)
+	  (>= y minesweeper-board-height))
+      nil ;; error into modeline?
+    (progn (debug (insert "called pick " (+ ?0 x) " " (+ ?0 y))
+		  (newline))
+	   (when minesweeper-first-move
+	     (if (eq (minesweeper-view-mine x y 't)
+		     ?X)
+		 (progn (minesweeper-init)
+			(minesweeper-pick x y))
+	       (setq minesweeper-first-move nil)))
+	   (unless (minesweeper-is-revealed x y)
+	     (let ((val (minesweeper-view-mine x y 't)))
+	       (if (eq val ?X)
+		   (minesweeper-lose-game x y)
+		 (progn
+		   (minesweeper-set-revealed x y 't)
+		   (when (eq val ?0)
+		     (let ((max-lisp-eval-depth (* 25 minesweeper-board-width minesweeper-board-height)))
+		       (minesweeper-pick-around x y)))
+		   (if (eq (setq minesweeper-blanks-left
+				 (1- minesweeper-blanks-left))
+			   0)
+		       (minesweeper-win-game)
+		     (unless suppress-field
+		       (minesweeper-print-field))))))))))
+
+(defun minesweeper-choose ()
+  "This is the function called when the user picks a mine."
+  (interactive)
+  (minesweeper-pick (current-column)
+		    (minesweeper-current-line)))
 
 
 (defun minesweeper-pick-around (x y)
@@ -189,9 +209,10 @@
 (defun minesweeper-lose-game (x y)
   (let ((inhibit-read-only t))
     (erase-buffer)
-    (insert "You lose. You chose spot (" (+ x ?0) ", " (+ y ?0) "), which was a bomb.")
+    (minesweeper-print-field 't)
     (newline 2)
-    (minesweeper-print-field 't)))
+    (insert "You lose. You chose spot (" (+ x ?0) ", " (+ y ?0) "), which was a bomb.")))
+
 
 (defun minesweeper-win-game ()
   (let ((inhibit-read-only t))
@@ -213,15 +234,14 @@
   `(when *debug*
      ,@body))
 
+(defun minesweeper-current-line ()
+  (save-excursion
+    (let ((line 0))
+      (move-beginning-of-line nil)
+      (while (not (bobp))
+	     (setq line (1+ line))
+	     (previous-line))
+      line)))
 
 
-
-  ;; (run-hooks 'minesweeper-mode-hook))
-
-;; (defvar minesweeper-mode-hook nil)
-
-;; (defvar minesweeper-mode-map
-;;   (let ((minesweeper-mode-map (make-sparse-keymap)))
-;;     )
-;;   "keymap for Minesweeper major mode")
 
