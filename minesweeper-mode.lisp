@@ -1,12 +1,9 @@
 (defvar minesweeper-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "\ ") 'minesweeper-choose)
+    (define-key map (kbd "SPC") 'minesweeper-choose)
     (define-key map (kbd "x") 'minesweeper-choose)
-    (define-key map (kbd "C-c C-v") 'minesweeper-choose)
-    (define-key map "\r" 'minesweeper-choose)
-    (define-key map (kbd "C-c C-c") 'minesweeper-choose)
+    (define-key map (kbd "RET") 'minesweeper-choose)
     map))
-
 
 (define-derived-mode minesweeper-mode nil "Minesweeper" "Major mode for playing Minesweeper in Emacs.
 \\{minesweeper-mode-map}"
