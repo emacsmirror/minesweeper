@@ -9,6 +9,8 @@
 \\{minesweeper-mode-map}"
   (kill-all-local-variables)
   (use-local-map minesweeper-mode-map)
+  (setq major-mode 'minesweeper-mode)
+  (setq mode-name "Minesweeper")
   (toggle-read-only t)
   (minesweeper-init)
   (minesweeper-print-field))
@@ -71,11 +73,12 @@
     (while (> mines-to-insert 0)
 	   (let ((x (random minesweeper-board-width))
 		 (y (random minesweeper-board-height)))
-		 (unless (eq (minesweeper-view-mine x y)
+		 (unless (eq (minesweeper-view-mine x y 't)
 			     ?X)
 		   (minesweeper-set-mine x y ?X)
 		   (minesweeper-inform-around x y)
 		   (setq mines-to-insert (1- mines-to-insert)))))))
+
 
 (defun minesweeper-view-mine (x y &optional reveal)
   "If reveal is true, or if the selected mine has been revealed, returns the value at position (x, y), where the origin is the upper left corner of the minefield. Otherwise, it returns '_'"
@@ -108,7 +111,6 @@
 	  (minesweeper-neighbors x y)))
 
 (defun minesweeper-++ (x y &optional amount)
-  ;; (minesweeper-set-mine x y 1))
   "Increments the value at square (x, y), unless the square is a bomb"
   (let ((val (minesweeper-view-mine x y 't)))
     (when (and (<= ?0 val)
@@ -142,34 +144,33 @@
 	      (insert-char (minesweeper-view-mine x y reveal) 1))
 	 (newline))))
 
-(defun minesweeper-pick (x y &optional suppress-field) ;; Bug is here -- recursion is too deep: blows past max-list-eval-depth if you hit a sparse section of the field.
+(defun minesweeper-pick (x y &optional suppress-field)
   "Select the square at position (x, y) to reveal. A user-facing function."
-  (if (or (>= x minesweeper-board-width)
+  (unless (or (>= x minesweeper-board-width)
 	  (>= y minesweeper-board-height))
-      nil ;; error into modeline?
-    (progn (debug (insert "called pick " (+ ?0 x) " " (+ ?0 y))
-		  (newline))
-	   (when minesweeper-first-move
-	     (if (eq (minesweeper-view-mine x y 't)
-		     ?X)
-		 (progn (minesweeper-init)
-			(minesweeper-pick x y))
-	       (setq minesweeper-first-move nil)))
-	   (unless (minesweeper-is-revealed x y)
-	     (let ((val (minesweeper-view-mine x y 't)))
-	       (if (eq val ?X)
-		   (minesweeper-lose-game x y)
-		 (progn
-		   (minesweeper-set-revealed x y 't)
-		   (when (eq val ?0)
-		     (let ((max-lisp-eval-depth (* 25 minesweeper-board-width minesweeper-board-height)))
-		       (minesweeper-pick-around x y)))
-		   (if (eq (setq minesweeper-blanks-left
-				 (1- minesweeper-blanks-left))
-			   0)
-		       (minesweeper-win-game)
-		     (unless suppress-field
-		       (minesweeper-print-field))))))))))
+    (debug (insert "called pick " (+ ?0 x) " " (+ ?0 y))
+	   (newline))
+    (when minesweeper-first-move
+      (if (eq (minesweeper-view-mine x y 't)
+	      ?X)
+	  (progn (minesweeper-init)
+		 (minesweeper-pick x y))
+	(setq minesweeper-first-move nil)))
+    (unless (minesweeper-is-revealed x y)
+      (let ((val (minesweeper-view-mine x y 't)))
+	(if (eq val ?X)
+	    (minesweeper-lose-game x y)
+	  (progn
+	    (minesweeper-set-revealed x y 't)
+	    (when (eq val ?0)
+	      (let ((max-lisp-eval-depth (* 25 minesweeper-board-width minesweeper-board-height)))
+		(minesweeper-pick-around x y)))
+	    (if (eq (setq minesweeper-blanks-left
+			  (1- minesweeper-blanks-left))
+		    0)
+		(minesweeper-win-game)
+	      (unless suppress-field
+		(minesweeper-print-field)))))))))
 
 (defun minesweeper-choose ()
   "This is the function called when the user picks a mine."
