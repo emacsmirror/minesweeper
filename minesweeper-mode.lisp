@@ -71,16 +71,6 @@
 	    (minesweeper-set-revealed x y nil)))
   (minesweeper-insert-mines minesweeper-mines))
 
-    ;; (let ((mines-to-insert minesweeper-mines))
-    ;; (while (> mines-to-insert 0)
-    ;; 	   (let ((x (random minesweeper-board-width))
-    ;; 		 (y (random minesweeper-board-height)))
-    ;; 		 (unless (eq (minesweeper-view-mine x y 't)
-    ;; 			     ?X)
-    ;; 		   (minesweeper-set-mine x y ?X)
-    ;; 		   (minesweeper-inform-around x y)
-    ;; 		   (setq mines-to-insert (1- mines-to-insert)))))))
-
 (defun minesweeper-insert-mines (count &optional protect-x protect-y)
   (while (> count 0)
     (let ((x (random minesweeper-board-width))
@@ -96,7 +86,6 @@
 
 (defun minesweeper-view-mine (x y &optional reveal)
   "If reveal is true, or if the selected mine has been revealed, returns the value at position (x, y), where the origin is the upper left corner of the minefield. Otherwise, it returns '_'"
-  ;; (debug "called view-mine " x)
   (debug "called view-mine " (char-to-string (+ x ?0)) " " (char-to-string (+ y ?0)) " " (if reveal "reveal!" "hide"))
   (if (or reveal
 	  (minesweeper-is-revealed x y))
@@ -210,30 +199,10 @@
   (debug "minesweeper-choose")
   (let ((col (current-column))
 	(row (minesweeper-current-line)))
-    ;; (debug "calling pick with " (char-to-string (+ ?0 col)) " " (char-to-string (+ ?0 row)))
     (minesweeper-pick col row)
     (goto-char (point-min))
     (forward-char col)
     (next-line row)))
-
-(defun check-col ()
-  (interactive)
-  (current-column))
-
-(defun check-row ()
-  (interactive)
-  (minesweeper-current-line))
-
-(defun minesweeper-choose-alt ()
-  "This is the function called when the user picks a mine."
-  (interactive)
-  (let ((col (current-column))
-	(row (minesweeper-current-line)))
-    (minesweeper-pick-alt col row)
-    (goto-char (point-min))
-    (forward-char col)
-    (next-line row)))
-
 
 (defun minesweeper-pick-around (x y)
   "Pick all the squares around (x, y). As a precondition, (x, y) should be zero."
@@ -269,7 +238,7 @@
        ,@body
        (setq ,var (1+ ,var)))))
 
-(defmacro debug4 (&rest body)
+(defmacro debug (&rest body)
   `(when *debug*
      (print (concat ,@body)
 	    (get-buffer-create "debug"))))
