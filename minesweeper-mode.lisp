@@ -69,19 +69,35 @@
        (for y 0 minesweeper-board-height
 	    (minesweeper-set-mine x y ?0)
 	    (minesweeper-set-revealed x y nil)))
-  (let ((mines-to-insert minesweeper-mines))
-    (while (> mines-to-insert 0)
-	   (let ((x (random minesweeper-board-width))
-		 (y (random minesweeper-board-height)))
-		 (unless (eq (minesweeper-view-mine x y 't)
-			     ?X)
-		   (minesweeper-set-mine x y ?X)
-		   (minesweeper-inform-around x y)
-		   (setq mines-to-insert (1- mines-to-insert)))))))
+  (minesweeper-insert-mines minesweeper-mines))
+
+    ;; (let ((mines-to-insert minesweeper-mines))
+    ;; (while (> mines-to-insert 0)
+    ;; 	   (let ((x (random minesweeper-board-width))
+    ;; 		 (y (random minesweeper-board-height)))
+    ;; 		 (unless (eq (minesweeper-view-mine x y 't)
+    ;; 			     ?X)
+    ;; 		   (minesweeper-set-mine x y ?X)
+    ;; 		   (minesweeper-inform-around x y)
+    ;; 		   (setq mines-to-insert (1- mines-to-insert)))))))
+
+(defun minesweeper-insert-mines (count &optional protect-x protect-y)
+  (while (> count 0)
+    (let ((x (random minesweeper-board-width))
+	  (y (random minesweeper-board-height)))
+      (unless (or (eq (minesweeper-view-mine x y 't)
+		      ?X)
+		  (and (eq x protect-x)
+		       (eq y protect-y)))
+	(minesweeper-set-mine x y ?X)
+	(minesweeper-inform-around x y)
+	(setq count (1- count))))))
 
 
 (defun minesweeper-view-mine (x y &optional reveal)
   "If reveal is true, or if the selected mine has been revealed, returns the value at position (x, y), where the origin is the upper left corner of the minefield. Otherwise, it returns '_'"
+  ;; (debug "called view-mine " x)
+  (debug "called view-mine " (char-to-string (+ x ?0)) " " (char-to-string (+ y ?0)) " " (if reveal "reveal!" "hide"))
   (if (or reveal
 	  (minesweeper-is-revealed x y))
       (gethash (list x y)
@@ -105,9 +121,9 @@
 	   minesweeper-reveals))
 
 (defun minesweeper-inform-around (x y &optional amount)
-  "takes in a square, and increases the values of all its empty neighbors"
+  "takes in a square, and increases the values of all its empty neighbors by 'amount"
   (mapcar (lambda (position)
-	    (apply 'minesweeper-++ position))
+	    (minesweeper-++ (car position) (cadr position) (or amount 1)))
 	  (minesweeper-neighbors x y)))
 
 (defun minesweeper-++ (x y &optional amount)
@@ -144,40 +160,76 @@
 	      (insert-char (minesweeper-view-mine x y reveal) 1))
 	 (newline))))
 
+
 (defun minesweeper-pick (x y &optional suppress-field)
   "Select the square at position (x, y) to reveal. A user-facing function."
+    (debug "pick " (char-to-string (+ ?0 x)) " " (char-to-string (+ ?0 y)))
   (unless (or (>= x minesweeper-board-width)
-	  (>= y minesweeper-board-height))
-    (debug (insert "called pick " (+ ?0 x) " " (+ ?0 y))
-	   (newline))
+	      (>= y minesweeper-board-height)
+	      (minesweeper-is-revealed x y))
     (when minesweeper-first-move
-      (if (eq (minesweeper-view-mine x y 't)
+      (when (eq (minesweeper-view-mine x y 't)
 	      ?X)
-	  (progn (minesweeper-init)
-		 (minesweeper-pick x y))
-	(setq minesweeper-first-move nil)))
-    (unless (minesweeper-is-revealed x y)
-      (let ((val (minesweeper-view-mine x y 't)))
-	(if (eq val ?X)
-	    (minesweeper-lose-game x y)
-	  (progn
-	    (minesweeper-set-revealed x y 't)
-	    (when (eq val ?0)
-	      (let ((max-lisp-eval-depth (* 25 minesweeper-board-width minesweeper-board-height)))
-		(minesweeper-pick-around x y)))
-	    (if (eq (setq minesweeper-blanks-left
-			  (1- minesweeper-blanks-left))
-		    0)
-		(minesweeper-win-game)
-	      (unless suppress-field
-		(minesweeper-print-field)))))))))
+	(minesweeper-move-mine-away x y))
+      (setq minesweeper-first-move nil))
+    (debug "in pick, done with first-move check")
+    (let ((val (minesweeper-view-mine x y 't)))
+      (debug "called view-mine")
+      (if (eq val ?X)
+	  (minesweeper-lose-game x y)
+	(progn
+	  (minesweeper-set-revealed x y 't)
+	  (when (eq val ?0)
+	    (let ((max-lisp-eval-depth (* 25 minesweeper-board-width minesweeper-board-height)))
+	      (minesweeper-pick-around x y)))
+	  (if (eq (setq minesweeper-blanks-left
+			(1- minesweeper-blanks-left))
+		  0)
+	      (minesweeper-win-game)
+	    (unless suppress-field
+	      (minesweeper-print-field))))))))
+
+
+
+
+(defun minesweeper-move-mine-away (x y)
+  (minesweeper-insert-mines 1 x y)
+  (let ((mine-count 0))
+    	  (map '(lambda (square) (when (eq (minesweeper-view-mine (car square) (cadr square) 't)
+					   ?X)
+				   (++ mine-count)))
+	       (minesweeper-neighbors x y))
+	  (minesweeper-set-mine x y mine-count))
+  (map '(lambda (square) (minesweeper-++ (car square) (cadr square) -1))
+       (minesweeper-neighbors x y))
+  (minesweeper-pick x y))
 
 (defun minesweeper-choose ()
   "This is the function called when the user picks a mine."
   (interactive)
+  (debug "minesweeper-choose")
   (let ((col (current-column))
 	(row (minesweeper-current-line)))
+    ;; (debug "calling pick with " (char-to-string (+ ?0 col)) " " (char-to-string (+ ?0 row)))
     (minesweeper-pick col row)
+    (goto-char (point-min))
+    (forward-char col)
+    (next-line row)))
+
+(defun check-col ()
+  (interactive)
+  (current-column))
+
+(defun check-row ()
+  (interactive)
+  (minesweeper-current-line))
+
+(defun minesweeper-choose-alt ()
+  "This is the function called when the user picks a mine."
+  (interactive)
+  (let ((col (current-column))
+	(row (minesweeper-current-line)))
+    (minesweeper-pick-alt col row)
     (goto-char (point-min))
     (forward-char col)
     (next-line row)))
@@ -185,35 +237,20 @@
 
 (defun minesweeper-pick-around (x y)
   "Pick all the squares around (x, y). As a precondition, (x, y) should be zero."
-  (debug (insert "called pick-around " (+ ?0 x) " " (+ ?0 y))
-	 (newline))
+  (debug "called pick-around " (char-to-string (+ ?0 x)) " " (char-to-string (+ ?0 y)) (newline))
   (mapcar '(lambda (position)
-	     (debug (insert "called pick-around-helper " (+ ?0 x) " " (+ ?0 y)) (newline))
+	     (debug "called pick-around-helper " (char-to-string (+ ?0 x)) " " (char-to-string (+ ?0 y)))
 	     (minesweeper-pick (car position) (cadr position) 't))
 	  (minesweeper-neighbors x y)))
-
-(defun minesweeper-alternate-pick (x y) ;; DOES NOT WORK -- INFINITE LOOP!
-  (unless (minesweeper-is-revealed x y)
-    (let ((val (minesweeper-view-mine x y 't))
-	  (stack (list (list x y))))
-      (if (eq val ?X)
-	  (minesweeper-lose-game x y)
-	(progn (when (eq val ?0)
-		 (while stack
-		   (unless (apply 'minesweeper-is-revealed (pop stack))
-		     (minesweeper-set-revealed x y 't)
-		     (mapcar (lambda (position) (push position stack))
-			     (minesweeper-neighbors x y)))))
-	       (if (eq minesweeper-blanks-left 0)
-		   (minesweeper-win-game)
-		 (minesweeper-print-field)))))))
 
 (defun minesweeper-lose-game (x y)
   (let ((inhibit-read-only t))
     (erase-buffer)
     (minesweeper-print-field 't)
     (newline 2)
-    (insert "You lose. You chose spot (" (+ x ?0) ", " (+ y ?0) "), which was a bomb.")))
+    (message (concat "You lose. You chose spot (" (char-to-string (+ x ?0)) ", " (char-to-string (+ y ?0)) ") which was a bomb."))))
+
+
 
 
 (defun minesweeper-win-game ()
@@ -221,7 +258,7 @@
     (erase-buffer)
     (minesweeper-print-field 't)
     (newline 2)
-    (insert "You win! Congrats!")))
+    (message "You win! Congrats!")))
 
 
 (defmacro for (var init end &rest body)
@@ -232,9 +269,10 @@
        ,@body
        (setq ,var (1+ ,var)))))
 
-(defmacro debug (&rest body)
+(defmacro debug4 (&rest body)
   `(when *debug*
-     ,@body))
+     (print (concat ,@body)
+	    (get-buffer-create "debug"))))
 
 (defun minesweeper-current-line ()
   (save-excursion
@@ -244,6 +282,7 @@
 	     (setq line (1+ line))
 	     (previous-line))
       line)))
+
 
 
 
