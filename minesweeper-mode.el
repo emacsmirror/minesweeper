@@ -86,7 +86,7 @@
 
 (defun minesweeper-view-mine (x y &optional reveal)
   "If reveal is true, or if the selected mine has been revealed, returns the value at position (x, y), where the origin is the upper left corner of the minefield. Otherwise, it returns '_'"
-  (debug "called view-mine " (char-to-string (+ x ?0)) " " (char-to-string (+ y ?0)) " " (if reveal "reveal!" "hide"))
+  (debug "called view-mine " (number-to-string x) " " (number-to-string y) " " (if reveal "reveal!" "hide"))
   (if (or reveal
 	  (minesweeper-is-revealed x y))
       (gethash (list x y)
@@ -152,10 +152,11 @@
 
 (defun minesweeper-pick (x y &optional suppress-field)
   "Select the square at position (x, y) to reveal. A user-facing function."
-    (debug "pick " (char-to-string (+ ?0 x)) " " (char-to-string (+ ?0 y)))
+  (debug "starting pick with args:" (number-to-string x) " " (number-to-string y))
   (unless (or (>= x minesweeper-board-width)
 	      (>= y minesweeper-board-height)
 	      (minesweeper-is-revealed x y))
+    (debug "inside pick guard")
     (when minesweeper-first-move
       (when (eq (minesweeper-view-mine x y 't)
 	      ?X)
@@ -163,7 +164,7 @@
       (setq minesweeper-first-move nil))
     (debug "in pick, done with first-move check")
     (let ((val (minesweeper-view-mine x y 't)))
-      (debug "called view-mine")
+      (debug "returned from view-mine: " (number-to-string val))
       (if (eq val ?X)
 	  (minesweeper-lose-game x y)
 	(progn
@@ -176,7 +177,9 @@
 		  0)
 	      (minesweeper-win-game)
 	    (unless suppress-field
-	      (minesweeper-print-field))))))))
+	      (minesweeper-print-field)))))))
+  (debug "finishing pick"))
+
 
 
 
@@ -196,19 +199,21 @@
 (defun minesweeper-choose ()
   "This is the function called when the user picks a mine."
   (interactive)
-  (debug "minesweeper-choose")
+  (debug "starting choose")
   (let ((col (current-column))
-	(row (minesweeper-current-line)))
+	(row (1- (line-number-at-pos))))
+    (debug "in choose, got col, row: " (number-to-string col) " " (number-to-string row))
     (minesweeper-pick col row)
     (goto-char (point-min))
     (forward-char col)
-    (next-line row)))
+    (next-line row))
+  (debug "finishing choose"))
 
 (defun minesweeper-pick-around (x y)
   "Pick all the squares around (x, y). As a precondition, (x, y) should be zero."
-  (debug "called pick-around " (char-to-string (+ ?0 x)) " " (char-to-string (+ ?0 y)) (newline))
+  (debug "called pick-around " (number-to-string x) " " (number-to-string y))
   (mapcar '(lambda (position)
-	     (debug "called pick-around-helper " (char-to-string (+ ?0 x)) " " (char-to-string (+ ?0 y)))
+	     (debug "called pick-around-helper " (number-to-string x) " " (number-to-string y))
 	     (minesweeper-pick (car position) (cadr position) 't))
 	  (minesweeper-neighbors x y)))
 
@@ -217,7 +222,7 @@
     (erase-buffer)
     (minesweeper-print-field 't)
     (newline 2)
-    (message (concat "You lose. You chose spot (" (char-to-string (+ x ?0)) ", " (char-to-string (+ y ?0)) ") which was a bomb."))))
+    (message (concat "You lose. You chose spot (" (number-to-string x) ", " (number-to-string y) ") which was a bomb."))))
 
 
 
@@ -242,16 +247,4 @@
   `(when *debug*
      (print (concat ,@body)
 	    (get-buffer-create "debug"))))
-
-(defun minesweeper-current-line ()
-  (save-excursion
-    (let ((line 0))
-      (move-beginning-of-line nil)
-      (while (not (bobp))
-	     (setq line (1+ line))
-	     (previous-line))
-      line)))
-
-
-
 
