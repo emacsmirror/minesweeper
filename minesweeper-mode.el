@@ -8,6 +8,7 @@
 (define-derived-mode minesweeper-mode nil "Minesweeper" "Major mode for playing Minesweeper in Emacs.
 \\{minesweeper-mode-map}"
   (kill-all-local-variables)
+  (switch-to-buffer "minesweeper")
   (use-local-map minesweeper-mode-map)
   (setq major-mode 'minesweeper-mode)
   (setq mode-name "Minesweeper")
