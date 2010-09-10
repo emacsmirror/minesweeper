@@ -5,8 +5,9 @@
     (define-key map (kbd "RET") 'minesweeper-choose)
     map))
 
-(define-derived-mode minesweeper-mode nil "Minesweeper" "Major mode for playing Minesweeper in Emacs.
+(defun minesweeper () "Minesweeper" "Major mode for playing Minesweeper in Emacs.
 \\{minesweeper-mode-map}"
+  (interactive)
   (kill-all-local-variables)
   (switch-to-buffer "minesweeper")
   (use-local-map minesweeper-mode-map)
@@ -48,6 +49,12 @@
 
 (defvar minesweeper-first-move 't
   "If 't, the next move is the first move. So if a mine is selected, move that mine elsewhere")
+
+(defvar minesweeper-wins 0
+  "The number of times the player has won the game this session")
+
+(defvar minesweeper-losses 0
+  "The number of times the player has lost the game this session")
 
 
 (defun minesweeper-init (&optional width height mines)
@@ -223,9 +230,15 @@
     (erase-buffer)
     (minesweeper-print-field 't)
     (newline 2)
-    (message (concat "You lose. You chose spot (" (number-to-string x) ", " (number-to-string y) ") which was a bomb."))))
-
-
+    (message (concat "You lose. You chose spot ("
+		     (number-to-string x)
+		     ", "
+		     (number-to-string y)
+		     ") which was a bomb. You've won "
+		     (number-to-string minesweeper-wins)
+		     " and lost "
+		     (number-to-string (setq minesweeper-losses (1+ minesweeper-losses)))
+		     "."))))
 
 
 (defun minesweeper-win-game ()
@@ -233,7 +246,11 @@
     (erase-buffer)
     (minesweeper-print-field 't)
     (newline 2)
-    (message "You win! Congrats!")))
+    (message (concat "You win! Congrats! You've won "
+		     (number-to-string (setq minesweeper-wins (1+ minesweeper-wins)))
+		     " and lost "
+		     (number-to-string minesweeper-losses)
+		     "."))))
 
 
 (defmacro for (var init end &rest body)
