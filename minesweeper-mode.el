@@ -14,8 +14,7 @@
   (setq major-mode 'minesweeper-mode)
   (setq mode-name "Minesweeper")
   (toggle-read-only t)
-  (minesweeper-init)
-  (minesweeper-print-field))
+  (minesweeper-begin-game))
 
 (defvar minesweeper-board-width 0
   "The number of columns on the Minesweeper field.")
@@ -56,6 +55,9 @@
 (defvar minesweeper-losses 0
   "The number of times the player has lost the game this session")
 
+(defun minesweeper-begin-game (&optional width height mines)
+  (minesweeper-init width height mines)
+  (minesweeper-print-field))
 
 (defun minesweeper-init (&optional width height mines)
   "Begin a game of Minesweeper with a board that's 'width by 'height size containing 'mines mines."
@@ -230,15 +232,16 @@
     (erase-buffer)
     (minesweeper-print-field 't)
     (newline 2)
-    (message (concat "You lose. You chose spot ("
-		     (number-to-string x)
-		     ", "
-		     (number-to-string y)
-		     ") which was a bomb. You've won "
-		     (number-to-string minesweeper-wins)
-		     " and lost "
-		     (number-to-string (setq minesweeper-losses (1+ minesweeper-losses)))
-		     "."))))
+    (when (y-or-n-p (concat "You lose. You chose spot ("
+			    (number-to-string x)
+			    ", "
+			    (number-to-string y)
+			    ") which was a bomb. You've won "
+			    (number-to-string minesweeper-wins)
+			    " and lost "
+			    (number-to-string (setq minesweeper-losses (1+ minesweeper-losses)))
+			    ". "))
+      (minesweeper-begin-game))))
 
 
 (defun minesweeper-win-game ()
@@ -246,11 +249,13 @@
     (erase-buffer)
     (minesweeper-print-field 't)
     (newline 2)
-    (message (concat "You win! Congrats! You've won "
-		     (number-to-string (setq minesweeper-wins (1+ minesweeper-wins)))
-		     " and lost "
-		     (number-to-string minesweeper-losses)
-		     "."))))
+    (when (y-or-n-p (concat "You win! Congrats! You've won "
+			    (number-to-string (setq minesweeper-wins (1+ minesweeper-wins)))
+			    " and lost "
+			    (number-to-string minesweeper-losses)
+			    ". Another game? "))
+      (minesweeper-begin-game))))
+
 
 
 (defmacro for (var init end &rest body)
