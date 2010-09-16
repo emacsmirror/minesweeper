@@ -8,8 +8,8 @@
 (defun minesweeper () "Minesweeper" "Major mode for playing Minesweeper in Emacs.
 \\{minesweeper-mode-map}"
   (interactive)
-  (kill-all-local-variables)
   (switch-to-buffer "minesweeper")
+  (kill-all-local-variables)
   (use-local-map minesweeper-mode-map)
   (setq major-mode 'minesweeper-mode)
   (setq mode-name "Minesweeper")
