@@ -3,6 +3,7 @@
     (define-key map (kbd "SPC") 'minesweeper-choose)
     (define-key map (kbd "x") 'minesweeper-choose)
     (define-key map (kbd "RET") 'minesweeper-choose)
+    (define-key map (kbd "m") 'minesweeper-toggle-mark)
     map))
 
 (defun minesweeper () "Minesweeper" "Major mode for playing Minesweeper in Emacs.
@@ -40,6 +41,9 @@
 (defvar minesweeper-reveals nil
   "Holds 't in (x, y) if (x, y) has been revealed")
 
+(defvar minesweeper-marks nil
+  "Holds 't in (x, y) iff (x, y) has been marked. A marked square cannot be chosen.")
+
 (defvar minesweeper-blanks-left 0
   "Holds the number of mines left. After 'minesweeper-init has been called, the user will win the game when this becomes zero again.")
 
@@ -66,6 +70,7 @@
 	minesweeper-mines (or mines minesweeper-default-mines)
 	minesweeper-field (make-hash-table :test 'equal)
 	minesweeper-reveals (make-hash-table :test 'equal)
+	minesweeper-marks (make-hash-table :test 'equal)
 	minesweeper-blanks-left (- (* minesweeper-board-width
 				     minesweeper-board-height)
 				  minesweeper-mines)
@@ -78,7 +83,8 @@
   (minesweeper-for x 0 minesweeper-board-width
        (minesweeper-for y 0 minesweeper-board-height
 	    (minesweeper-set-mine x y ?0)
-	    (minesweeper-set-revealed x y nil)))
+	    (minesweeper-set-revealed x y nil)
+	    (minesweeper-unmark x y)))
   (minesweeper-insert-mines minesweeper-mines))
 
 (defun minesweeper-insert-mines (count &optional protect-x protect-y)
@@ -95,13 +101,16 @@
 
 
 (defun minesweeper-view-mine (x y &optional reveal)
-  "If reveal is true, or if the selected mine has been revealed, returns the value at position (x, y), where the origin is the upper left corner of the minefield. Otherwise, it returns '_'"
+  "If reveal is true, or if the selected mine has been revealed, returns the value at position (x, y), where the origin is the upper left corner of the minefield. Otherwise, it returns . if the square is marked, _ if it is not"
   (minesweeper-debug "called view-mine " (number-to-string x) " " (number-to-string y) " " (if reveal "reveal!" "hide"))
-  (if (or reveal
-	  (minesweeper-is-revealed x y))
-      (gethash (list x y)
-	       minesweeper-field)
-    ?_))
+  (cond ((or reveal
+	     (minesweeper-is-revealed x y))
+	 (gethash (list x y)
+		  minesweeper-field))
+	((minesweeper-marked x y)
+	 ?.)
+	('t
+	 ?_)))
 
 (defun minesweeper-set-mine (x y val)
   "Inserts val into the mine at (x, y)"
@@ -110,14 +119,32 @@
 	   minesweeper-field))
 
 (defun minesweeper-set-revealed (x y val)
-  "Sets (x, y) in the filter to 'val"
+  "Sets (x, y) in the reveals to 'val"
   (puthash (list x y)
 	   val
 	   minesweeper-reveals))
 
 (defun minesweeper-is-revealed (x y)
+  "Returns 't if (x, y) is revealed, nil otherwise"
   (gethash (list x y)
 	   minesweeper-reveals))
+
+(defun minesweeper-mark (x y)
+  "Marks the square (x, y) as having a mine. It can't be selected until it is unmarked"
+  (puthash (list x y)
+	   't
+	   minesweeper-marks))
+
+(defun minesweeper-unmark (x y)
+  "Removes the mark from (x, y). It can now be selected."
+  (puthash (list x y)
+	   nil
+	   minesweeper-marks))
+
+(defun minesweeper-marked (x y)
+  "Returns 't if (x, y) is marked as having a mine, nil otherwise"
+  (gethash (list x y)
+	   minesweeper-marks))
 
 (defun minesweeper-inform-around (x y &optional amount)
   "takes in a square, and increases the values of all its empty neighbors by 'amount"
@@ -165,7 +192,8 @@
   (minesweeper-debug "starting pick with args:" (number-to-string x) " " (number-to-string y))
   (unless (or (>= x minesweeper-board-width)
 	      (>= y minesweeper-board-height)
-	      (minesweeper-is-revealed x y))
+	      (minesweeper-is-revealed x y)
+	      (minesweeper-marked x y))
     (minesweeper-debug "in pick, valid position chosen")
     (when minesweeper-first-move
       (minesweeper-debug "in pick, first-move is on")
@@ -192,7 +220,19 @@
 	      (minesweeper-print-field)))))))
   (minesweeper-debug "finishing pick"))
 
-
+(defun minesweeper-toggle-mark ()
+  "Set the marked status of the current square to the opposite of what it currently is"
+  (interactive)
+  (let ((col (current-column))
+	(row (1- (line-number-at-pos))))
+    (unless (minesweeper-is-revealed col row)
+      (if (minesweeper-marked col row)
+	  (minesweeper-unmark col row)
+	(minesweeper-mark col row))
+      (minesweeper-print-field)
+      (goto-char (point-min))
+      (forward-char col)
+      (next-line row))))
 
 
 
