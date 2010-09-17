@@ -245,7 +245,7 @@
 			    (number-to-string minesweeper-wins)
 			    " and lost "
 			    (number-to-string (setq minesweeper-losses (1+ minesweeper-losses)))
-			    ". "))
+			    ". Another game? "))
       (minesweeper-begin-game))))
 
 
