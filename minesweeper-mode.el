@@ -43,7 +43,7 @@
 (defvar minesweeper-blanks-left 0
   "Holds the number of mines left. After 'minesweeper-init has been called, the user will win the game when this becomes zero again.")
 
-(defvar *debug* nil
+(defvar *minesweeper-debug* nil
   "when 't, print debugging information.")
 
 (defvar minesweeper-first-move 't
@@ -75,8 +75,8 @@
 
 (defun minesweeper-fill-field ()
   "Fills 'minesweeper-field with 'minesweeper-mines mines, and builds the neighbor count."
-  (for x 0 minesweeper-board-width
-       (for y 0 minesweeper-board-height
+  (minesweeper-for x 0 minesweeper-board-width
+       (minesweeper-for y 0 minesweeper-board-height
 	    (minesweeper-set-mine x y ?0)
 	    (minesweeper-set-revealed x y nil)))
   (minesweeper-insert-mines minesweeper-mines))
@@ -96,7 +96,7 @@
 
 (defun minesweeper-view-mine (x y &optional reveal)
   "If reveal is true, or if the selected mine has been revealed, returns the value at position (x, y), where the origin is the upper left corner of the minefield. Otherwise, it returns '_'"
-  (debug "called view-mine " (number-to-string x) " " (number-to-string y) " " (if reveal "reveal!" "hide"))
+  (minesweeper-debug "called view-mine " (number-to-string x) " " (number-to-string y) " " (if reveal "reveal!" "hide"))
   (if (or reveal
 	  (minesweeper-is-revealed x y))
       (gethash (list x y)
@@ -138,8 +138,8 @@
 (defun minesweeper-neighbors (x y)
   "Returns a list of the neighbors of (x, y)."
   (let ((neighbors nil))
-    (for newx (1- x) (1+ x)
-	 (for newy (1- y) (1+ y)
+    (minesweeper-for newx (1- x) (1+ x)
+	 (minesweeper-for newy (1- y) (1+ y)
 	      (unless (or (and (eq newx x)
 			       (eq newy y))
 			  (< newx 0)
@@ -154,29 +154,29 @@
   "Print out the minefield."
   (let ((inhibit-read-only t))
     (erase-buffer)
-    (for y 0 (1- minesweeper-board-height)
-	 (for x 0 (1- minesweeper-board-width)
+    (minesweeper-for y 0 (1- minesweeper-board-height)
+	 (minesweeper-for x 0 (1- minesweeper-board-width)
 	      (insert-char (minesweeper-view-mine x y reveal) 1))
 	 (newline))))
 
 
 (defun minesweeper-pick (x y &optional suppress-field)
   "Select the square at position (x, y) to reveal. A user-facing function."
-  (debug "starting pick with args:" (number-to-string x) " " (number-to-string y))
+  (minesweeper-debug "starting pick with args:" (number-to-string x) " " (number-to-string y))
   (unless (or (>= x minesweeper-board-width)
 	      (>= y minesweeper-board-height)
 	      (minesweeper-is-revealed x y))
-    (debug "in pick, valid position chosen")
+    (minesweeper-debug "in pick, valid position chosen")
     (when minesweeper-first-move
-      (debug "in pick, first-move is on")
+      (minesweeper-debug "in pick, first-move is on")
       (when (eq (minesweeper-view-mine x y 't)
 	      ?X)
-	(debug "On the first move, the user picked a mine. Moving it away")
+	(minesweeper-debug "On the first move, the user picked a mine. Moving it away")
 	(minesweeper-move-mine-away x y))
       (setq minesweeper-first-move nil))
-    (debug "in pick, done with first-move check")
+    (minesweeper-debug "in pick, done with first-move check")
     (let ((val (minesweeper-view-mine x y 't)))
-      (debug "returned from view-mine: " (number-to-string val))
+      (minesweeper-debug "returned from view-mine: " (number-to-string val))
       (if (eq val ?X)
 	  (minesweeper-lose-game x y)
 	(progn
@@ -190,17 +190,17 @@
 	      (minesweeper-win-game)
 	    (unless suppress-field
 	      (minesweeper-print-field)))))))
-  (debug "finishing pick"))
+  (minesweeper-debug "finishing pick"))
 
 
 
 
 
 (defun minesweeper-move-mine-away (x y)
-  (debug "in move-mine-away")
+  (minesweeper-debug "in move-mine-away")
   (minesweeper-insert-mines 1 x y)
   (let ((mine-count 0))
-    (debug "in move-mine-away, calling map")
+    (minesweeper-debug "in move-mine-away, calling map")
     (mapcar '(lambda (square) (when (eq (minesweeper-view-mine (car square) (cadr square) 't)
 				     ?X)
 			     (++ mine-count)))
@@ -208,27 +208,27 @@
     (minesweeper-set-mine x y (+ ?0 mine-count)))
   (mapcar '(lambda (square) (minesweeper-++ (car square) (cadr square) -1))
        (minesweeper-neighbors x y))
-  (debug "in move-mine-away, calling pick")
+  (minesweeper-debug "in move-mine-away, calling pick")
   (minesweeper-pick x y))
 
 (defun minesweeper-choose ()
   "This is the function called when the user picks a mine."
   (interactive)
-  (debug "starting choose")
+  (minesweeper-debug "starting choose")
   (let ((col (current-column))
 	(row (1- (line-number-at-pos))))
-    (debug "in choose, got col, row: " (number-to-string col) " " (number-to-string row))
+    (minesweeper-debug "in choose, got col, row: " (number-to-string col) " " (number-to-string row))
     (minesweeper-pick col row)
     (goto-char (point-min))
     (forward-char col)
     (next-line row))
-  (debug "finishing choose"))
+  (minesweeper-debug "finishing choose"))
 
 (defun minesweeper-pick-around (x y)
   "Pick all the squares around (x, y). As a precondition, (x, y) should be zero."
-  (debug "called pick-around " (number-to-string x) " " (number-to-string y))
+  (minesweeper-debug "called pick-around " (number-to-string x) " " (number-to-string y))
   (mapcar '(lambda (position)
-	     (debug "called pick-around-helper " (number-to-string x) " " (number-to-string y))
+	     (minesweeper-debug "called pick-around-helper " (number-to-string x) " " (number-to-string y))
 	     (minesweeper-pick (car position) (cadr position) 't))
 	  (minesweeper-neighbors x y)))
 
@@ -263,7 +263,7 @@
 
 
 
-(defmacro for (var init end &rest body)
+(defmacro minesweeper-for (var init end &rest body)
   "helper function. executes 'body repeatedly, with 'var assigned values starting at 'init, and ending at 'end, increasing by one each iteration."
   `(let ((,var ,init)
 	 (end-val ,end))
@@ -271,8 +271,8 @@
        ,@body
        (setq ,var (1+ ,var)))))
 
-(defmacro debug (&rest body)
-  `(when *debug*
+(defmacro minesweeper-debug (&rest body)
+  `(when *minesweeper-debug*
      (print (concat ,@body)
 	    (get-buffer-create "debug"))))
 
