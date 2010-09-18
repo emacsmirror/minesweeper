@@ -101,16 +101,16 @@
 
 
 (defun minesweeper-view-mine (x y &optional reveal)
-  "If reveal is true, or if the selected mine has been revealed, returns the value at position (x, y), where the origin is the upper left corner of the minefield. Otherwise, it returns . if the square is marked, _ if it is not"
+  "If reveal is true, or if the selected mine has been revealed, returns the value at position (x, y), where the origin is the upper left corner of the minefield. Otherwise, it returns * if the square is marked, - if it is not"
   (minesweeper-debug "called view-mine " (number-to-string x) " " (number-to-string y) " " (if reveal "reveal!" "hide"))
   (cond ((or reveal
 	     (minesweeper-is-revealed x y))
 	 (gethash (list x y)
 		  minesweeper-field))
 	((minesweeper-marked x y)
-	 ?.)
+	 ?*)
 	('t
-	 ?_)))
+	 ?-)))
 
 (defun minesweeper-set-mine (x y val)
   "Inserts val into the mine at (x, y)"
