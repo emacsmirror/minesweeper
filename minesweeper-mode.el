@@ -14,8 +14,58 @@
   (use-local-map minesweeper-mode-map)
   (setq major-mode 'minesweeper-mode)
   (setq mode-name "Minesweeper")
+  (setq font-lock-defaults '(minesweeper-font-faces))
   (toggle-read-only t)
   (minesweeper-begin-game))
+
+(defvar minesweeper-font-faces
+  '(("-" . 'minesweeper-blank)
+    ("*" . 'minesweeper-marked)
+    ("0" . 'minesweeper-0)
+    ("1" . 'minesweeper-1)
+    ("2" . 'minesweeper-2)
+    ("3" . 'minesweeper-3)
+    ("4" . 'minesweeper-4)
+    ("5" . 'minesweeper-5)
+    ("6" . 'minesweeper-6)
+    ("7" . 'minesweeper-7)
+    ("8" . 'minesweeper-8))
+  "Font lock rules for minesweeper.")
+
+
+
+(defface minesweeper-blank
+  '((t (:foreground "black"))) "face for blank spaces")
+
+(defface minesweeper-marked
+  '((t (:foreground "black"))) "face for marked spaces")
+
+(defface minesweeper-0
+  '((t (:foreground "Grey"))) "face for zero spaces")
+
+(defface minesweeper-1
+  '((t (:foreground "#2020FF"))) "face for 1 spaces")
+
+(defface minesweeper-2
+  '((t (:foreground "#00C000"))) "face for 2 spaces")
+
+(defface minesweeper-3
+  '((t (:foreground "#6000A0"))) "face for 3 spaces")
+
+(defface minesweeper-4
+  '((t (:foreground "#C00000"))) "face for 4 spaces")
+
+(defface minesweeper-5
+  '((t (:foreground "#008080"))) "face for 5 spaces")
+
+(defface minesweeper-6
+  '((t (:foreground "#FF8000"))) "face for 6 spaces")
+
+(defface minesweeper-7
+  '((t (:foreground "#A06000"))) "face for 7 spaces")
+
+(defface minesweeper-8
+  '((t (:foreground "#FF0000"))) "face for 8 spaces")
 
 (defvar minesweeper-board-width 0
   "The number of columns on the Minesweeper field.")
