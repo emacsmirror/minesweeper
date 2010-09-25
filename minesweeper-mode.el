@@ -110,8 +110,23 @@
   "The number of times the player has lost the game this session")
 
 (defun minesweeper-begin-game (&optional width height mines)
-  (minesweeper-init width height mines)
-  (minesweeper-print-field))
+  (if (and width height mines)
+      (minesweeper-init width height mines) ;; refactor repeated (or .. ..) calls
+    (if (y-or-n-p (concat (number-to-string (or width minesweeper-default-width))
+			  " by "
+			  (number-to-string (or height minesweeper-default-height))
+			  " with "
+			  (number-to-string (or mines minesweeper-default-mines))
+			  " mines ok? "))
+	(minesweeper-init (or width minesweeper-default-width)
+			  (or height minesweeper-default-height)
+			  (or mines minesweeper-default-mines))
+      (let ((width (minesweeper-get-integer "Minefield width? " (number-to-string (or width minesweeper-default-width))))
+	    (height (minesweeper-get-integer "Minefield height? " (number-to-string (or height minesweeper-default-height))))
+	    (mines (minesweeper-get-integer "Number of mines? " (number-to-string (or mines minesweeper-default-mines)))))
+	(minesweeper-init width height mines))))
+  (minesweeper-print-field)
+  (message "Good luck!"))
 
 (defun minesweeper-init (&optional width height mines)
   "Begin a game of Minesweeper with a board that's 'width by 'height size containing 'mines mines."
@@ -366,3 +381,7 @@
      (print (concat ,@body)
 	    (get-buffer-create "debug"))))
 
+(defun minesweeper-get-integer (&optional message default)
+  (let ((val (read-string (or message "Input an integer:")
+			  (or default "0"))))
+    (string-to-number val)))
