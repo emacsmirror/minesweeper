@@ -189,6 +189,17 @@
 	   val
 	   minesweeper-reveals))
 
+(defun minesweeper-reveal (x y)
+  "Reveals (x, y)."
+  (puthash (list x y)
+	   't
+	   minesweeper-reveals))
+
+(defun minesweeper-hide (x y)
+  "Hides (x, y)."
+  (puthash (list x y)
+	   nil
+	   minesweeper-reveals))
 (defun minesweeper-is-revealed (x y)
   "Returns 't if (x, y) is revealed, nil otherwise"
   (gethash (list x y)
@@ -244,13 +255,14 @@
 
 (defun minesweeper-print-field (&optional reveal)
   "Print out the minefield."
+  (minesweeper-debug "Printing out the field")
   (let ((inhibit-read-only t))
     (erase-buffer)
     (minesweeper-for y 0 (1- minesweeper-board-height)
 	 (minesweeper-for x 0 (1- minesweeper-board-width)
 	      (insert-char (minesweeper-view-mine x y reveal) 1))
-	 (newline))))
-
+	 (newline)))
+  (minesweeper-debug "Field is printed out"))
 
 (defun minesweeper-pick (x y &optional suppress-field)
   "Select the square at position (x, y) to reveal. A user-facing function."
@@ -261,29 +273,40 @@
 	      (minesweeper-marked x y))
     (minesweeper-debug "in pick, valid position chosen")
     (when minesweeper-first-move
-      (minesweeper-debug "in pick, first-move is on")
+      (minesweeper-debug "in pick, first-move is on. Calling view-mine.")
       (when (eq (minesweeper-view-mine x y 't)
 	      ?X)
 	(minesweeper-debug "On the first move, the user picked a mine. Moving it away")
 	(minesweeper-move-mine-away x y))
       (setq minesweeper-first-move nil))
-    (minesweeper-debug "in pick, done with first-move check")
+    (minesweeper-debug "in pick, done with first-move check. Getting the value of the square.")
     (let ((val (minesweeper-view-mine x y 't)))
-      (minesweeper-debug "returned from view-mine: " (number-to-string val))
+      (minesweeper-debug "view-mine called. The value at " (number-to-string x) ", " (number-to-string y) " is " (make-string 1 val))
       (if (eq val ?X)
 	  (minesweeper-lose-game x y)
-	(progn
-	  (minesweeper-set-revealed x y 't)
-	  (when (eq val ?0)
-	    (let ((max-lisp-eval-depth (* 25 minesweeper-board-width minesweeper-board-height)))
-	      (minesweeper-pick-around x y)))
-	  (if (eq (setq minesweeper-blanks-left
-			(1- minesweeper-blanks-left))
-		  0)
-	      (minesweeper-win-game)
-	    (unless suppress-field
-	      (minesweeper-print-field)))))))
-  (minesweeper-debug "finishing pick"))
+	(let ((to-reveal (list (list x y))))
+	  (minesweeper-debug "The user didn't pick an X")
+	  (while to-reveal
+	    (let* ((cur (pop to-reveal))
+		   (cur-x (car cur))
+		   (cur-y (cadr cur))
+		   (val (minesweeper-view-mine cur-x cur-y 't)))
+	      (minesweeper-debug "View-mine says " (number-to-string cur-x) ", " (number-to-string cur-y) " mine = " (make-string 1 val))
+	      (unless (minesweeper-is-revealed cur-x cur-y)
+		(minesweeper-debug "it's not revealed, so reveal it")
+		(minesweeper-reveal cur-x cur-y)
+		(if (eq (setq minesweeper-blanks-left (1- minesweeper-blanks-left))
+			0)
+		    (progn (setq suppress-field 't)
+			   (minesweeper-win-game))
+		  (when (eq val ?0)
+		    (minesweeper-debug "pushing neighbors onto the stack")
+		    (mapcar '(lambda (position)
+			       (push position
+				     to-reveal))
+			    (minesweeper-neighbors cur-x cur-y)))))))
+	  (unless suppress-field
+	    (minesweeper-print-field)))))))
 
 (defun minesweeper-toggle-mark ()
   "Set the marked status of the current square to the opposite of what it currently is"
