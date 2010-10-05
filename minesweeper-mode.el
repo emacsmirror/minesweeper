@@ -4,6 +4,10 @@
     (define-key map (kbd "x") 'minesweeper-choose)
     (define-key map (kbd "RET") 'minesweeper-choose)
     (define-key map (kbd "m") 'minesweeper-toggle-mark)
+    (define-key map (kbd "b") 'backward-char)
+    (define-key map (kbd "f") 'forward-char)
+    (define-key map (kbd "n") 'next-line)
+    (define-key map (kbd "p") 'previous-line)
     map))
 
 (defun minesweeper () "Minesweeper" "Major mode for playing Minesweeper in Emacs.
