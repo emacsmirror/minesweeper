@@ -8,6 +8,7 @@
     (define-key map (kbd "f") 'forward-char)
     (define-key map (kbd "n") 'next-line)
     (define-key map (kbd "p") 'previous-line)
+    (define-key map (kbd "c") 'minesweeper-choose-around)
     map))
 
 (defun minesweeper () "Minesweeper" "Major mode for playing Minesweeper in Emacs.
@@ -287,7 +288,8 @@
     (let ((val (minesweeper-view-mine x y 't)))
       (minesweeper-debug "view-mine called. The value at " (number-to-string x) ", " (number-to-string y) " is " (make-string 1 val))
       (if (eq val ?X)
-	  (minesweeper-lose-game x y)
+	  (progn (minesweeper-lose-game x y)
+		 (throw 'game-end nil))
 	(let ((to-reveal (list (list x y))))
 	  (minesweeper-debug "The user didn't pick an X")
 	  (while to-reveal
@@ -335,8 +337,8 @@
     (minesweeper-debug "in move-mine-away, calling map")
     (mapcar '(lambda (square) (when (eq (minesweeper-view-mine (car square) (cadr square) 't)
 				     ?X)
-			     (++ mine-count)))
-	 (minesweeper-neighbors x y))
+			     (setq mine-count (1+ mine-count))))
+	    (minesweeper-neighbors x y))
     (minesweeper-set-mine x y (+ ?0 mine-count)))
   (mapcar '(lambda (square) (minesweeper-++ (car square) (cadr square) -1))
        (minesweeper-neighbors x y))
@@ -350,11 +352,26 @@
   (let ((col (current-column))
 	(row (1- (line-number-at-pos))))
     (minesweeper-debug "in choose, got col, row: " (number-to-string col) " " (number-to-string row))
-    (minesweeper-pick col row)
+    (catch 'game-end (minesweeper-pick col row))
+    (goto-char (point-min))
+    (forward-char col)
+    (next-line row)) ;; bug here if minefield wraps
+  (minesweeper-debug "finishing choose"))
+
+(defun minesweeper-choose-around ()
+  "This is the function called by the user to pick all non-marked cells around the current one."
+  (interactive)
+  (minesweeper-debug "starting choose")
+  (let ((col (current-column))
+	(row (1- (line-number-at-pos))))
+    (minesweeper-debug "in choose, got col, row: " (number-to-string col) " " (number-to-string row))
+    (catch 'game-end (minesweeper-pick-around col row))
+    (minesweeper-print-field) ;; This is too similar to pick-around, except for this line. Can it be refactored?
     (goto-char (point-min))
     (forward-char col)
     (next-line row))
-  (minesweeper-debug "finishing choose"))
+  (minesweeper-debug "finishing choose-around"))
+
 
 (defun minesweeper-pick-around (x y)
   "Pick all the squares around (x, y). As a precondition, (x, y) should be zero."
@@ -412,3 +429,4 @@
   (let ((val (read-string (or message "Input an integer:")
 			  (or default "0"))))
     (string-to-number val)))
+
