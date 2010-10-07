@@ -118,21 +118,19 @@
   "The number of times the player has lost the game this session")
 
 (defun minesweeper-begin-game (&optional width height mines)
-  (if (and width height mines)
-      (minesweeper-init width height mines) ;; refactor repeated (or .. ..) calls
-    (if (y-or-n-p (concat (number-to-string (or width minesweeper-default-width))
-			  " by "
-			  (number-to-string (or height minesweeper-default-height))
-			  " with "
-			  (number-to-string (or mines minesweeper-default-mines))
-			  " mines ok? "))
-	(minesweeper-init (or width minesweeper-default-width)
-			  (or height minesweeper-default-height)
-			  (or mines minesweeper-default-mines))
-      (let ((width (minesweeper-get-integer "Minefield width? " (number-to-string (or width minesweeper-default-width))))
-	    (height (minesweeper-get-integer "Minefield height? " (number-to-string (or height minesweeper-default-height))))
-	    (mines (minesweeper-get-integer "Number of mines? " (number-to-string (or mines minesweeper-default-mines)))))
-	(minesweeper-init width height mines))))
+  (if (y-or-n-p (concat (number-to-string (or width minesweeper-default-width))
+			" by "
+			(number-to-string (or height minesweeper-default-height))
+			" with "
+			(number-to-string (or mines minesweeper-default-mines))
+			" mines ok? "))
+      (minesweeper-init (or width minesweeper-default-width)
+			(or height minesweeper-default-height)
+			(or mines minesweeper-default-mines))
+    (let ((width (minesweeper-get-integer "Minefield width? " (number-to-string (or width minesweeper-default-width))))
+	  (height (minesweeper-get-integer "Minefield height? " (number-to-string (or height minesweeper-default-height))))
+	  (mines (minesweeper-get-integer "Number of mines? " (number-to-string (or mines minesweeper-default-mines)))))
+      (minesweeper-init width height mines)))
   (minesweeper-print-field)
   (message "Good luck!"))
 
@@ -399,7 +397,7 @@
 			    " and lost "
 			    (number-to-string (setq minesweeper-losses (1+ minesweeper-losses)))
 			    ". Another game? "))
-      (minesweeper-begin-game))))
+      (minesweeper-begin-game minesweeper-board-width minesweeper-board-height minesweeper-mines))))
 
 
 (defun minesweeper-win-game ()
@@ -412,7 +410,7 @@
 			    " and lost "
 			    (number-to-string minesweeper-losses)
 			    ". Another game? "))
-      (minesweeper-begin-game))))
+      (minesweeper-begin-game minesweeper-board-width minesweeper-board-height minesweeper-mines))))
 
 
 
