@@ -386,34 +386,28 @@
 
 (defun minesweeper-lose-game (x y)
   "Print the lose-game message and prompt for a new one."
-  (let ((inhibit-read-only t))
-    (erase-buffer)
-    (minesweeper-print-field 't)
-    (newline 2)
-    (when (y-or-n-p (concat "You lose. You chose spot ("
-			    (number-to-string x)
-			    ", "
-			    (number-to-string y)
-			    ") which was a bomb. You've won "
-			    (number-to-string minesweeper-wins)
-			    " and lost "
-			    (number-to-string (setq minesweeper-losses (1+ minesweeper-losses)))
-			    ". Another game? "))
-      (minesweeper-begin-game minesweeper-board-width minesweeper-board-height minesweeper-mines))))
+  (minesweeper-print-field 't)
+  (when (y-or-n-p (concat "You lose. You chose spot ("
+			  (number-to-string x)
+			  ", "
+			  (number-to-string y)
+			  ") which was a bomb. You've won "
+			  (number-to-string minesweeper-wins)
+			  " and lost "
+			  (number-to-string (setq minesweeper-losses (1+ minesweeper-losses)))
+			  ". Another game? "))
+    (minesweeper-begin-game minesweeper-board-width minesweeper-board-height minesweeper-mines)))
 
 
 (defun minesweeper-win-game ()
   "Print the win-game message and prompt for a new one."
-  (let ((inhibit-read-only t))
-    (erase-buffer)
-    (minesweeper-print-field 't)
-    (newline 2)
-    (when (y-or-n-p (concat "You win! Congrats! You've won "
-			    (number-to-string (setq minesweeper-wins (1+ minesweeper-wins)))
-			    " and lost "
-			    (number-to-string minesweeper-losses)
-			    ". Another game? "))
-      (minesweeper-begin-game minesweeper-board-width minesweeper-board-height minesweeper-mines))))
+  (minesweeper-print-field 't)
+  (when (y-or-n-p (concat "You win! Congrats! You've won "
+			  (number-to-string (setq minesweeper-wins (1+ minesweeper-wins)))
+			  " and lost "
+			  (number-to-string minesweeper-losses)
+			  ". Another game? "))
+    (minesweeper-begin-game minesweeper-board-width minesweeper-board-height minesweeper-mines)))
 
 
 
