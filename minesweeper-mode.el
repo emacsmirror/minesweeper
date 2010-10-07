@@ -333,6 +333,7 @@
 
 
 (defun minesweeper-move-mine-away (x y)
+  "Moves a mine away from (x, y) to another random position. It updates the values in the minefield to account for neighbor changes."
   (minesweeper-debug "in move-mine-away")
   (minesweeper-insert-mines 1 x y)
   (let ((mine-count 0))
@@ -384,6 +385,7 @@
 	  (minesweeper-neighbors x y)))
 
 (defun minesweeper-lose-game (x y)
+  "Print the lose-game message and prompt for a new one."
   (let ((inhibit-read-only t))
     (erase-buffer)
     (minesweeper-print-field 't)
@@ -401,6 +403,7 @@
 
 
 (defun minesweeper-win-game ()
+  "Print the win-game message and prompt for a new one."
   (let ((inhibit-read-only t))
     (erase-buffer)
     (minesweeper-print-field 't)
@@ -415,7 +418,7 @@
 
 
 (defmacro minesweeper-for (var init end &rest body)
-  "helper function. executes 'body repeatedly, with 'var assigned values starting at 'init, and ending at 'end, increasing by one each iteration."
+  "Helper function. executes 'body repeatedly, with 'var assigned values starting at 'init, and ending at 'end, increasing by one each iteration."
   `(let ((,var ,init)
 	 (end-val ,end))
      (while (<= ,var end-val)
@@ -423,16 +426,19 @@
        (setq ,var (1+ ,var)))))
 
 (defmacro minesweeper-debug (&rest body)
+  "If *minesweeper-debug* is 't, log ,@body as a string to the buffer named 'debug'"
   `(when *minesweeper-debug*
      (print (concat ,@body)
 	    (get-buffer-create "debug"))))
 
 (defun minesweeper-get-integer (&optional message default)
+  "Reads one integer from the minibuffer."
   (let ((val (read-string (or message "Input an integer:")
 			  (or default "0"))))
-    (string-to-number val)))
+    (string-to-number val))) ;; needs error checking
 
 (defun minesweeper-forward-line (&optional lines)
+  "Moves one line forward, keeping point at the same column."
   (interactive)
   (let ((col (current-column)))
     (forward-line (or lines 1))
