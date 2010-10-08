@@ -426,10 +426,17 @@
 	    (get-buffer-create "debug"))))
 
 (defun minesweeper-get-integer (&optional message default)
-  "Reads one integer from the minibuffer."
-  (let ((val (read-string (or message "Input an integer:")
-			  (or default "0"))))
-    (string-to-number val))) ;; needs error checking
+  "Reads one nonzero integer from the minibuffer."
+  (let ((val (string-to-number (read-string (or message "Input an integer:")
+					    (or default "0")))))
+    (while (eq val 0)
+      (setq val (string-to-number (read-string (concat (or message "Input an integer")
+						       ". Please, a nonzero integer. Try again:")
+					       (or default "0")))))
+    val))
+(integerp nil)
+(minesweeper-get-integer)
+
 
 (defun minesweeper-forward-line (&optional lines)
   "Moves one line forward, keeping point at the same column."
