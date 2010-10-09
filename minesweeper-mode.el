@@ -8,7 +8,6 @@
     (define-key map (kbd "f") 'forward-char)
     (define-key map (kbd "C-n") 'minesweeper-forward-line)
     (define-key map (kbd "n") 'minesweeper-forward-line)
-    ;; (define-key map (kbd "p") 'previous-line)
     (define-key map (kbd "p") (lambda () (interactive) (minesweeper-forward-line -1)))
     (define-key map (kbd "C-p") (lambda () (interactive) (minesweeper-forward-line -1)))
     (define-key map (kbd "c") 'minesweeper-choose-around)
