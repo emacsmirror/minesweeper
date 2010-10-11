@@ -116,6 +116,9 @@
 (defvar minesweeper-losses 0
   "The number of times the player has lost the game this session")
 
+(defvar minesweeper-game-started nil
+  "The time the current game started.")
+
 (defun minesweeper-begin-game (&optional width height mines)
   (if (y-or-n-p (concat (number-to-string (or width minesweeper-default-width))
 			" by "
@@ -144,7 +147,8 @@
 	minesweeper-blanks-left (- (* minesweeper-board-width
 				     minesweeper-board-height)
 				  minesweeper-mines)
-	minesweeper-first-move 't)
+	minesweeper-first-move 't
+	minesweeper-game-started (current-time))
   (minesweeper-fill-field))
 
 
@@ -386,27 +390,37 @@
 (defun minesweeper-lose-game (x y)
   "Print the lose-game message and prompt for a new one."
   (minesweeper-print-field 't)
-  (when (y-or-n-p (concat "You lose. You chose spot ("
-			  (number-to-string x)
-			  ", "
-			  (number-to-string y)
-			  ") which was a bomb. You've won "
-			  (number-to-string minesweeper-wins)
-			  " and lost "
-			  (number-to-string (setq minesweeper-losses (1+ minesweeper-losses)))
-			  ". Another game? "))
-    (minesweeper-begin-game minesweeper-board-width minesweeper-board-height minesweeper-mines)))
+  (let ((game-duration (time-subtract (current-time) minesweeper-game-started)))
+    (when (y-or-n-p (concat "You lose. This game took "
+			    (format-seconds "%H, %M, %S. " (+ (* (car game-duration)
+								 (expt 2 16))
+							      (cadr game-duration)))
+			    "You chose spot ("
+			    (number-to-string x)
+			    ", "
+			    (number-to-string y)
+			    ") which was a bomb. You've won "
+			    (number-to-string minesweeper-wins)
+			    " and lost "
+			    (number-to-string (setq minesweeper-losses (1+ minesweeper-losses)))
+			    ". Another game? "))
+      (minesweeper-begin-game minesweeper-board-width minesweeper-board-height minesweeper-mines))))
 
 
 (defun minesweeper-win-game ()
   "Print the win-game message and prompt for a new one."
   (minesweeper-print-field 't)
-  (when (y-or-n-p (concat "You win! Congrats! You've won "
-			  (number-to-string (setq minesweeper-wins (1+ minesweeper-wins)))
-			  " and lost "
-			  (number-to-string minesweeper-losses)
-			  ". Another game? "))
-    (minesweeper-begin-game minesweeper-board-width minesweeper-board-height minesweeper-mines)))
+  (let ((game-duration (time-subtract (current-time) minesweeper-game-started)))
+    (when (y-or-n-p (concat "Congrats! You've won in "
+			    (format-seconds "%H, %M, %S. " (+ (* (car game-duration)
+								 (expt 2 16))
+							      (cadr game-duration)))
+			    "You've won "
+			    (number-to-string (setq minesweeper-wins (1+ minesweeper-wins)))
+			    " and lost "
+			    (number-to-string minesweeper-losses)
+			    ". Another game? "))
+      (minesweeper-begin-game minesweeper-board-width minesweeper-board-height minesweeper-mines))))
 
 
 
