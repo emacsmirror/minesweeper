@@ -11,6 +11,7 @@
     (define-key map (kbd "p") (lambda () (interactive) (minesweeper-forward-line -1)))
     (define-key map (kbd "C-p") (lambda () (interactive) (minesweeper-forward-line -1)))
     (define-key map (kbd "c") 'minesweeper-choose-around)
+    (define-key map (kbd "s") 'minesweeper-show-neighbors)
     map))
 
 (defun minesweeper () "Minesweeper" "Major mode for playing Minesweeper in Emacs.
@@ -74,6 +75,9 @@
 (defface minesweeper-8
   '((t (:foreground "#FF0000"))) "face for 8 spaces")
 
+(defface minesweeper-neighbor
+  '((t (:background "#C0FFFF"))) "face for the neighbors of point")
+
 (defvar minesweeper-board-width 0
   "The number of columns on the Minesweeper field.")
 
@@ -118,6 +122,30 @@
 
 (defvar minesweeper-game-started nil
   "The time the current game started.")
+
+(defvar minesweeper-top-overlay
+  (let ((overlay (make-overlay 0 0)))
+    (overlay-put overlay 'face 'minesweeper-neighbor)
+    overlay)
+  "The overlay to go above point")
+
+(defvar minesweeper-left-overlay
+  (let ((overlay (make-overlay 0 0)))
+    (overlay-put overlay 'face 'minesweeper-neighbor)
+    overlay)
+  "The overlay to go left of point")
+
+(defvar minesweeper-right-overlay
+  (let ((overlay (make-overlay 0 0)))
+    (overlay-put overlay 'face 'minesweeper-neighbor)
+    overlay)
+  "The overlay to go right of point")
+
+(defvar minesweeper-bottom-overlay
+  (let ((overlay (make-overlay 0 0)))
+    (overlay-put overlay 'face 'minesweeper-neighbor)
+    overlay)
+  "The overlay to go below point")
 
 (defun minesweeper-begin-game (&optional width height mines)
   (if (y-or-n-p (concat (number-to-string (or width minesweeper-default-width))
@@ -209,6 +237,7 @@
   (puthash (list x y)
 	   nil
 	   minesweeper-reveals))
+
 (defun minesweeper-is-revealed (x y)
   "Returns 't if (x, y) is revealed, nil otherwise"
   (gethash (list x y)
@@ -447,9 +476,6 @@
 						       ". Please, a nonzero integer. Try again:")
 					       (or default "0")))))
     val))
-(integerp nil)
-(minesweeper-get-integer)
-
 
 (defun minesweeper-forward-line (&optional lines)
   "Moves one line forward, keeping point at the same column."
@@ -457,3 +483,34 @@
   (let ((col (current-column)))
     (forward-line (or lines 1))
     (forward-char col)))
+
+(defun minesweeper-show-neighbors ()
+  (interactive)
+  (let ((col (current-column))
+	(row (1- (line-number-at-pos)))
+	(point (point)))
+    (unless (or (>= col minesweeper-board-width)
+		(>= row minesweeper-board-height))
+      (if (eq row 0);; "top" overlay
+	  (move-overlay minesweeper-top-overlay 0 0 (get-buffer "minesweeper"))
+	(let ((center (- point minesweeper-board-width 1)))
+	  (move-overlay minesweeper-top-overlay
+			(- center (min col 1))
+			(+ center 1 (if (>= col (1- minesweeper-board-width)) 0 1))
+			(get-buffer "minesweeper"))))
+
+      (if (eq col 0);; "left" overlay
+	  (move-overlay minesweeper-left-overlay 0 0 (get-buffer "minesweeper"))
+	(move-overlay minesweeper-left-overlay (1- point) point (get-buffer "minesweeper")))
+
+      (if (>= col (1- minesweeper-board-width)) ;; "right" overlay
+	  (move-overlay minesweeper-right-overlay 0 0 (get-buffer "minesweeper"))
+	(move-overlay minesweeper-right-overlay (1+ point) (+ point 2) (get-buffer "minesweeper")))
+
+      (if (>= row (1- minesweeper-board-height)) ;; "bottom" overlay
+	  (move-overlay minesweeper-bottom-overlay 0 0 (get-buffer "minesweeper"))
+	(let ((center (+ point minesweeper-board-width 1)))
+	  (move-overlay minesweeper-bottom-overlay
+			(- center (if (eq col 0) 0 1))
+			(+ center 1 (if (>= col (1- minesweeper-board-width)) 0 1))
+			(get-buffer "minesweeper")))))))
