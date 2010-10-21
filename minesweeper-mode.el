@@ -390,13 +390,13 @@
     (catch 'game-end (minesweeper-pick col row))
     (goto-char (point-min))
     (forward-char col)
-    (next-line row)) ;; bug here if minefield wraps
+    (minesweeper-forward-line row)) ;; bug here if minefield wraps
   (minesweeper-debug "finishing choose"))
 
 (defun minesweeper-choose-around ()
-  "This is the function called by the user to pick all non-marked cells around the current one."
+  "This is the function called by the user to pick all non-marked cells around point. It does not include the cell at point."
   (interactive)
-  (minesweeper-debug "starting choose")
+  (minesweeper-debug "starting choose-around")
   (let ((col (current-column))
 	(row (1- (line-number-at-pos))))
     (minesweeper-debug "in choose, got col, row: " (number-to-string col) " " (number-to-string row))
@@ -404,7 +404,7 @@
     (minesweeper-print-field) ;; This is too similar to pick-around, except for this line. Can it be refactored?
     (goto-char (point-min))
     (forward-char col)
-    (next-line row))
+    (minesweeper-forward-line row))
   (minesweeper-debug "finishing choose-around"))
 
 
