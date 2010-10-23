@@ -185,7 +185,7 @@
   (minesweeper-for x 0 minesweeper-board-width
        (minesweeper-for y 0 minesweeper-board-height
 	    (minesweeper-set-mine x y ?0)
-	    (minesweeper-set-revealed x y nil)
+	    (minesweeper-hide x y nil)
 	    (minesweeper-unmark x y)))
   (minesweeper-insert-mines minesweeper-mines))
 
@@ -219,12 +219,6 @@
   (puthash (list x y)
 	   val
 	   minesweeper-field))
-
-(defun minesweeper-set-revealed (x y val)
-  "Sets (x, y) in the reveals to 'val"
-  (puthash (list x y)
-	   val
-	   minesweeper-reveals))
 
 (defun minesweeper-reveal (x y)
   "Reveals (x, y)."
