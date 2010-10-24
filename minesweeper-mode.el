@@ -147,6 +147,10 @@
     overlay)
   "The overlay to go below point")
 
+(defvar minesweeper-mark-count
+  0
+  "The number of mines the user has marked.")
+
 (defun minesweeper-begin-game (&optional width height mines)
   (if (y-or-n-p (concat (number-to-string (or width minesweeper-default-width))
 			" by "
@@ -176,7 +180,8 @@
 				     minesweeper-board-height)
 				  minesweeper-mines)
 	minesweeper-first-move 't
-	minesweeper-game-started (current-time))
+	minesweeper-game-started (current-time)
+	minesweeper-mark-count 0)
   (minesweeper-fill-field))
 
 
@@ -239,15 +244,20 @@
 
 (defun minesweeper-mark (x y)
   "Marks the square (x, y) as having a mine. It can't be selected until it is unmarked"
-  (puthash (list x y)
-	   't
-	   minesweeper-marks))
+  (unless (minesweeper-marked x y)
+    (puthash (list x y)
+	     't
+	     minesweeper-marks)
+    (setq minesweeper-mark-count (1+ minesweeper-mark-count))))
+
 
 (defun minesweeper-unmark (x y)
   "Removes the mark from (x, y). It can now be selected."
-  (puthash (list x y)
-	   nil
-	   minesweeper-marks))
+  (when (minesweeper-marked x y)
+    (puthash (list x y)
+	     nil
+	     minesweeper-marks)
+    (setq minesweeper-mark-count (1- minesweeper-mark-count))))
 
 (defun minesweeper-marked (x y)
   "Returns 't if (x, y) is marked as having a mine, nil otherwise"
@@ -293,7 +303,13 @@
     (minesweeper-for y 0 (1- minesweeper-board-height)
 	 (minesweeper-for x 0 (1- minesweeper-board-width)
 	      (insert-char (minesweeper-view-mine x y reveal) 1))
-	 (newline)))
+	 (newline))
+    (unless reveal
+      (newline)
+      (insert (number-to-string minesweeper-mark-count)
+	      " of "
+	      (number-to-string minesweeper-mines)
+	      " marked.")))
   (minesweeper-debug "Field is printed out"))
 
 (defun minesweeper-pick (x y)
