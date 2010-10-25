@@ -360,10 +360,12 @@
   "Set the marked status of the current square to the opposite of what it currently is"
   (interactive)
   (minesweeper-refresh-field
-   (unless (minesweeper-is-revealed col row)
-     (if (minesweeper-marked col row)
-	 (minesweeper-unmark col row)
-       (minesweeper-mark col row)))))
+   (let ((col (current-column))
+	 (row (1- (line-number-at-pos))))
+     (unless (minesweeper-is-revealed col row)
+       (if (minesweeper-marked col row)
+	   (minesweeper-unmark col row)
+	 (minesweeper-mark col row))))))
 
 (defun minesweeper-move-mine-away (x y)
   "Moves a mine away from (x, y) to another random position. It updates the values in the minefield to account for neighbor changes."
@@ -386,7 +388,9 @@
   (interactive)
   (minesweeper-debug "starting choose")
   (minesweeper-refresh-field
-   (catch 'game-end (minesweeper-pick col row)))
+   (let ((col (current-column))
+	 (row (1- (line-number-at-pos))))
+     (catch 'game-end (minesweeper-pick col row))))
   (minesweeper-debug "finishing choose"))
 
 (defun minesweeper-choose-around ()
@@ -394,7 +398,9 @@
   (interactive)
   (minesweeper-debug "starting choose-around")
   (minesweeper-refresh-field
-   (catch 'game-end (minesweeper-pick-around col row)))
+   (let ((col (current-column))
+	 (row (1- (line-number-at-pos))))
+     (catch 'game-end (minesweeper-pick-around col row))))
   (minesweeper-debug "finishing choose-around"))
 
 
@@ -458,7 +464,7 @@
 
 (defmacro minesweeper-refresh-field (&rest body)
   "executes the body code, and prints out the new minefield, putting point back where it was when this macro was called. Binds 'col and 'row to appropriate values."
-  `(let ((col (current-column))
+  `(let ((col (current-column)) ;; make use gensyms
 	 (row (1- (line-number-at-pos))))
      ,@body
      (minesweeper-print-field)
