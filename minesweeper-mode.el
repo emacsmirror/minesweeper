@@ -1,3 +1,5 @@
+(require 'cl)
+
 (defvar minesweeper-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "SPC") 'minesweeper-choose)
@@ -464,13 +466,15 @@
 
 (defmacro minesweeper-refresh-field (&rest body)
   "executes the body code, and prints out the new minefield, putting point back where it was when this macro was called. Binds 'col and 'row to appropriate values."
-  `(let ((col (current-column)) ;; make use gensyms
-	 (row (1- (line-number-at-pos))))
-     ,@body
-     (minesweeper-print-field)
-     (goto-char (point-min))
-     (forward-char col)
-     (minesweeper-forward-line row)))
+  (let ((col (gensym))
+	(row (gensym)))
+    `(let ((,col (current-column)) ;; make use gensyms
+	   (,row (1- (line-number-at-pos))))
+       ,@body
+       (minesweeper-print-field)
+       (goto-char (point-min))
+       (forward-char ,col)
+       (minesweeper-forward-line ,row))))
 
 (defun minesweeper-get-integer (&optional message default)
   "Reads one nonzero integer from the minibuffer."
