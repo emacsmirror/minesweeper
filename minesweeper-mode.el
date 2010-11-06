@@ -22,24 +22,9 @@
   (use-local-map minesweeper-mode-map)
   (setq major-mode 'minesweeper-mode)
   (setq mode-name "Minesweeper")
-  (setq font-lock-defaults '(minesweeper-font-faces))
+  ;; (setq font-lock-defaults '(minesweeper-font-faces))
   (toggle-read-only t)
   (minesweeper-begin-game))
-
-(defvar minesweeper-font-faces
-  '(("-" . 'minesweeper-blank)
-    ("*" . 'minesweeper-marked)
-    ("0" . 'minesweeper-0)
-    ("1" . 'minesweeper-1)
-    ("2" . 'minesweeper-2)
-    ("3" . 'minesweeper-3)
-    ("4" . 'minesweeper-4)
-    ("5" . 'minesweeper-5)
-    ("6" . 'minesweeper-6)
-    ("7" . 'minesweeper-7)
-    ("8" . 'minesweeper-8))
-  "Font lock rules for minesweeper.")
-
 
 
 (defface minesweeper-blank
@@ -77,6 +62,20 @@
 
 (defface minesweeper-neighbor
   '((t (:background "#C0FFFF"))) "face for the neighbors of point")
+
+(defvar minesweeper-font-faces
+  '(("-" . 'minesweeper-blank)
+    ("*" . 'minesweeper-marked)
+    ("0" . 'minesweeper-0)
+    ("1" . 'minesweeper-1)
+    ("2" . 'minesweeper-2)
+    ("3" . 'minesweeper-3)
+    ("4" . 'minesweeper-4)
+    ("5" . 'minesweeper-5)
+    ("6" . 'minesweeper-6)
+    ("7" . 'minesweeper-7)
+    ("8" . 'minesweeper-8))
+  "Font lock rules for minesweeper.")
 
 (defvar minesweeper-board-width 0
   "The number of columns on the Minesweeper field.")
@@ -150,6 +149,22 @@
 (defvar minesweeper-mark-count
   0
   "The number of mines the user has marked.")
+
+(defvar minesweeper-faces
+  (let ((table (make-hash-table :test 'equal)))
+    (puthash ?0 minesweeper-0 table)
+    (puthash ?1 minesweeper-1 table)
+    (puthash ?2 minesweeper-2 table)
+    (puthash ?3 minesweeper-3 table)
+    (puthash ?4 minesweeper-4 table)
+    (puthash ?5 minesweeper-5 table)
+    (puthash ?6 minesweeper-6 table)
+    (puthash ?7 minesweeper-7 table)
+    (puthash ?8 minesweeper-8 table)
+    (puthash ?- minesweeper-blank table)
+    (puthash ?* minesweeper-marked table)
+    table)
+  "The hashtable mapping a character to the face it should have.")
 
 (defun minesweeper-begin-game (&optional width height mines)
   (if (y-or-n-p (concat (number-to-string (or width minesweeper-default-width))
@@ -302,7 +317,11 @@
     (erase-buffer)
     (minesweeper-for y 0 (1- minesweeper-board-height)
 	 (minesweeper-for x 0 (1- minesweeper-board-width)
-	      (insert-char (minesweeper-view-mine x y reveal) 1))
+              (let ((val (minesweeper-view-mine x y reveal))
+		    (overlay (make-overlay 0 0)))
+		(insert-char val 1)
+		(overlay-put overlay 'face (minesweeper-get-face val))
+		(move-overlay overlay (point) (1+ (point)))))
 	 (newline))
     (unless reveal
       (newline)
@@ -521,3 +540,6 @@
 			(- center (if (eq col 0) 0 1))
 			(+ center 1 (if (>= col (1- minesweeper-board-width)) 0 1))
 			(get-buffer "minesweeper")))))))
+
+(defun minesweeper-get-face (val)
+  (gethash val minesweeper-faces))
