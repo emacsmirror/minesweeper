@@ -123,6 +123,9 @@
 (defvar minesweeper-game-started nil
   "The time the current game started.")
 
+(defvar minesweeper-min-free-squares 1
+  "The minimum number of squares which must be free.")
+
 (defvar minesweeper-top-overlay
   (let ((overlay (make-overlay 0 0)))
     (overlay-put overlay 'face 'minesweeper-neighbor)
@@ -182,6 +185,14 @@
 	minesweeper-first-move 't
 	minesweeper-game-started (current-time)
 	minesweeper-mark-count 0)
+  (while (< minesweeper-blanks-left minesweeper-min-free-squares)
+    (setq minesweeper-mines (minesweeper-get-integer (format "Too many mines. You can have at most %d mines. Number of mines?" (- (* minesweeper-board-width
+																     minesweeper-board-height)
+																  minesweeper-min-free-squares))
+						     minesweeper-default-mines)
+	  minesweeper-blanks-left (- (* minesweeper-board-width
+				     minesweeper-board-height)
+				  minesweeper-mines)))
   (minesweeper-fill-field))
 
 
@@ -466,7 +477,7 @@
   "executes the body code, and prints out the new minefield, putting point back where it was when this macro was called. Binds 'col and 'row to appropriate values."
   (let ((col (make-symbol "col"))
 	(row (make-symbol "row")))
-    `(let ((,col (current-column)) ;; make use gensyms
+    `(let ((,col (current-column))
 	   (,row (1- (line-number-at-pos))))
        ,@body
        (minesweeper-print-field)
@@ -476,8 +487,11 @@
 
 (defun minesweeper-get-integer (&optional message default)
   "Reads one nonzero integer from the minibuffer."
+  (setq default (if (integerp default)
+		    (number-to-string default)
+		    (or default "0")))
   (let ((val (string-to-number (read-string (or message "Input an integer:")
-					    (or default "0")))))
+					    default))))
     (while (eq val 0)
       (setq val (string-to-number (read-string (concat (or message "Input an integer")
 						       ". Please, a nonzero integer. Try again:")
