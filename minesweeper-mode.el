@@ -14,7 +14,7 @@
     (define-key map (kbd "s") 'minesweeper-show-neighbors)
     map))
 
-(defun minesweeper () "Minesweeper" "Major mode for playing Minesweeper in Emacs.
+(defun minesweeper () "Major mode for playing Minesweeper in Emacs.
 \\{minesweeper-mode-map}"
   (interactive)
   (switch-to-buffer "minesweeper")
