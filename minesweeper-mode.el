@@ -381,33 +381,33 @@
 (defun minesweeper-toggle-mark ()
   "Set the marked status of the current square to the opposite of what it currently is"
   (interactive)
-  (minesweeper-refresh-field
-   (let ((col (current-column))
-	 (row (1- (line-number-at-pos))))
-     (unless (minesweeper-is-revealed col row)
-       (if (minesweeper-marked col row)
-	   (minesweeper-unmark col row)
-	 (minesweeper-mark col row))))))
+  (let ((col (current-column))
+	(row (1- (line-number-at-pos))))
+    (unless (minesweeper-is-revealed col row)
+      (if (minesweeper-marked col row)
+	  (minesweeper-unmark col row)
+	(minesweeper-mark col row))))
+  (minesweeper-refresh-field))
 
 (defun minesweeper-choose ()
   "This is the function called when the user picks a mine."
   (interactive)
   (minesweeper-debug "starting choose")
-  (minesweeper-refresh-field
-   (let ((col (current-column))
-	 (row (1- (line-number-at-pos))))
-     (catch 'game-end (minesweeper-pick col row))))
+  (let ((col (current-column))
+	(row (1- (line-number-at-pos))))
+    (catch 'game-end (minesweeper-pick col row)))
+  (minesweeper-refresh-field)
   (minesweeper-debug "finishing choose"))
 
 (defun minesweeper-choose-around ()
   "This is the function called by the user to pick all non-marked cells around point. It does not include the cell at point."
   (interactive)
   (minesweeper-debug "starting choose-around")
-  (minesweeper-refresh-field
-   (let ((col (current-column))
-	 (row (1- (line-number-at-pos))))
-     (catch 'game-end (minesweeper-pick-around col row))))
-  (minesweeper-debug "finishing choose-around"))
+  (let ((col (current-column))
+	(row (1- (line-number-at-pos))))
+    (catch 'game-end (minesweeper-pick-around col row)))
+    (minesweeper-refresh-field)
+    (minesweeper-debug "finishing choose-around"))
 
 
 (defun minesweeper-pick-around (x y)
@@ -468,17 +468,14 @@
      (print (concat ,@body)
 	    (get-buffer-create "debug"))))
 
-(defmacro minesweeper-refresh-field (&rest body)
-  "executes the body code, and prints out the new minefield, putting point back where it was when this macro was called. Binds 'col and 'row to appropriate values."
-  (let ((col (make-symbol "col"))
-	(row (make-symbol "row")))
-    `(let ((,col (current-column))
-	   (,row (1- (line-number-at-pos))))
-       ,@body
-       (minesweeper-print-field)
-       (goto-char (point-min))
-       (forward-char ,col)
-       (next-line ,row))))
+(defun minesweeper-refresh-field ()
+  "Prints out the new minefield, putting point back where it was when this function was called."
+  (let ((col (current-column))
+	(row (1- (line-number-at-pos))))
+    (minesweeper-print-field)
+    (goto-char (point-min))
+    (forward-char col)
+    (next-line row)))
 
 (defun minesweeper-get-integer (&optional message default)
   "Reads one nonzero integer from the minibuffer."
@@ -492,7 +489,6 @@
 						       ". Please, a nonzero integer. Try again:")
 					       (or default "0")))))
     val))
-
 
 (defun minesweeper-show-neighbors ()
   (interactive)
