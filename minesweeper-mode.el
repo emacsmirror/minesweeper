@@ -155,6 +155,7 @@
   "The number of mines the user has marked.")
 
 (defun minesweeper-begin-game (&optional width height mines)
+  (minesweeper-debug "beginning the game")
   (if (y-or-n-p (concat (number-to-string (or width minesweeper-default-width))
 			" by "
 			(number-to-string (or height minesweeper-default-height))
@@ -173,6 +174,7 @@
 
 (defun minesweeper-init (&optional width height mines)
   "Begin a game of Minesweeper with a board that's 'width by 'height size containing 'mines mines."
+  (minesweeper-debug "initializing the game")
   (setq minesweeper-board-width (or width minesweeper-default-width)
 	minesweeper-board-height (or height minesweeper-default-height)
 	minesweeper-mines (or mines minesweeper-default-mines)
@@ -185,6 +187,7 @@
 	minesweeper-first-move 't
 	minesweeper-game-started (current-time)
 	minesweeper-mark-count 0)
+  (minesweeper-debug "setting things over")
   (while (< minesweeper-blanks-left minesweeper-min-free-squares)
     (setq minesweeper-mines (minesweeper-get-integer (format "Too many mines. You can have at most %d mines. Number of mines?" (- (* minesweeper-board-width
 																     minesweeper-board-height)
@@ -192,31 +195,42 @@
 						     minesweeper-default-mines)
 	  minesweeper-blanks-left (- (* minesweeper-board-width
 				     minesweeper-board-height)
-				  minesweeper-mines)))
-  (minesweeper-fill-field))
+				  minesweeper-mines))))
 
 
-(defun minesweeper-fill-field ()
-  "Fills 'minesweeper-field with 'minesweeper-mines mines, and builds the neighbor count."
-  (minesweeper-for x 0 minesweeper-board-width
-       (minesweeper-for y 0 minesweeper-board-height
+(defun minesweeper-fill-field (protect-x protect-y)
+  "Fills 'minesweeper-field with 'minesweeper-mines mines, and builds the neighbor count. It will not place any mines in the square (protect-x, protect-y)."
+  (minesweeper-debug "filling the field")
+  (minesweeper-for x 0 (1- minesweeper-board-width)
+       (minesweeper-debug "inside outer loop -- x is " (number-to-string x))
+       (minesweeper-for y 0 (1- minesweeper-board-height)
+	    (minesweeper-debug "inside inner loop -- setting up mine " (number-to-string x) " " (number-to-string y))
 	    (minesweeper-set-mine x y ?0)
 	    (minesweeper-hide x y)
 	    (minesweeper-unmark x y)))
-  (minesweeper-insert-mines minesweeper-mines))
+  (minesweeper-debug "done setting zeros; now inserting mines")
+  (minesweeper-insert-mines minesweeper-mines protect-x protect-y))
 
-(defun minesweeper-insert-mines (count &optional protect-x protect-y)
-  (while (> count 0)
-    (let ((x (random minesweeper-board-width))
-	  (y (random minesweeper-board-height)))
-      (unless (or (eq (minesweeper-view-mine x y 't)
-		      ?X)
-		  (and (eq x protect-x)
-		       (eq y protect-y)))
-	(minesweeper-set-mine x y ?X)
-	(minesweeper-inform-around x y)
-	(setq count (1- count))))))
-
+(defun minesweeper-insert-mines (count protect-x protect-y)
+  "insert 'count mines into the minefield, and build up the neighbor count. There can't be a mine at the square (protect-x, protect-y)"
+  (minesweeper-debug "inserting " (number-to-string count) " mines")
+  (let* ((square-count (1- (* minesweeper-board-width minesweeper-board-height)))
+	 (mines (make-vector square-count (list 0 0)))
+	 (pos 0))
+    (minesweeper-for x 0 (1- minesweeper-board-width)
+		     (minesweeper-for y 0 (1- minesweeper-board-height)
+				      (unless (and (eq x protect-x)
+						   (eq y protect-y))
+					(minesweeper-debug "setting " (number-to-string x) "\t" (number-to-string y))
+					(aset mines pos (list x y))
+					(setq pos (1+ pos)))))
+    (dotimes (i count)
+      (let* ((rand (random (- square-count i)))
+	     (ele (aref mines rand)))
+	(minesweeper-debug "picked a random mine at position " (number-to-string rand) ". The mine is " (number-to-string (car ele)) "\t" (number-to-string (cadr ele)) ". We've picked " (number-to-string i)" mines so far.")
+	(aset mines rand (aref mines (- square-count i 1)))
+	(minesweeper-set-mine (car ele) (cadr ele) ?X)
+	(minesweeper-inform-around (car ele) (cadr ele))))))
 
 (defun minesweeper-view-mine (x y &optional reveal)
   "If reveal is true, or if the selected mine has been revealed, returns the value at position (x, y), where the origin is the upper left corner of the minefield. Otherwise, it returns * if the square is marked, - if it is not"
@@ -333,10 +347,7 @@
     (minesweeper-debug "in pick, valid position chosen")
     (when minesweeper-first-move
       (minesweeper-debug "in pick, first-move is on. Calling view-mine.")
-      (when (eq (minesweeper-view-mine x y 't)
-	      ?X)
-	(minesweeper-debug "On the first move, the user picked a mine. Moving it away")
-	(minesweeper-move-mine-away x y))
+      (minesweeper-fill-field x y)
       (setq minesweeper-first-move nil))
     (minesweeper-debug "in pick, done with first-move check. Getting the value of the square.")
     (let ((val (minesweeper-view-mine x y 't)))
@@ -377,22 +388,6 @@
        (if (minesweeper-marked col row)
 	   (minesweeper-unmark col row)
 	 (minesweeper-mark col row))))))
-
-(defun minesweeper-move-mine-away (x y)
-  "Moves a mine away from (x, y) to another random position. It updates the values in the minefield to account for neighbor changes."
-  (minesweeper-debug "in move-mine-away")
-  (minesweeper-insert-mines 1 x y)
-  (let ((mine-count 0))
-    (minesweeper-debug "in move-mine-away, calling map")
-    (mapcar '(lambda (square) (when (eq (minesweeper-view-mine (car square) (cadr square) 't)
-				     ?X)
-			     (setq mine-count (1+ mine-count))))
-	    (minesweeper-neighbors x y))
-    (minesweeper-set-mine x y (+ ?0 mine-count)))
-  (mapcar '(lambda (square) (minesweeper-++ (car square) (cadr square) -1))
-       (minesweeper-neighbors x y))
-  (minesweeper-debug "in move-mine-away, calling pick")
-  (minesweeper-pick x y))
 
 (defun minesweeper-choose ()
   "This is the function called when the user picks a mine."
@@ -483,7 +478,7 @@
        (minesweeper-print-field)
        (goto-char (point-min))
        (forward-char ,col)
-       (minesweeper-forward-line ,row))))
+       (next-line ,row))))
 
 (defun minesweeper-get-integer (&optional message default)
   "Reads one nonzero integer from the minibuffer."
