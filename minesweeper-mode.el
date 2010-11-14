@@ -3,6 +3,7 @@
     (define-key map (kbd "SPC") 'minesweeper-choose)
     (define-key map (kbd "x") 'minesweeper-choose)
     (define-key map (kbd "RET") 'minesweeper-choose)
+    (define-key map [mouse-1] 'minesweeper-choose)
     (define-key map (kbd "m") 'minesweeper-toggle-mark)
     (define-key map (kbd "b") 'backward-char)
     (define-key map (kbd "f") 'forward-char)
