@@ -5,6 +5,7 @@
     (define-key map (kbd "RET") 'minesweeper-choose)
     (define-key map [mouse-1] 'minesweeper-choose)
     (define-key map (kbd "m") 'minesweeper-toggle-mark)
+    (define-key map [mouse-3] 'minesweeper-toggle-mark-mouse)
     (define-key map (kbd "b") 'backward-char)
     (define-key map (kbd "f") 'forward-char)
     (define-key map (kbd "C-n") 'next-line)
@@ -270,12 +271,12 @@
 
 (defun minesweeper-mark (x y)
   "Marks the square (x, y) as having a mine. It can't be selected until it is unmarked"
+  (minesweeper-debug "marking square " (number-to-string x) "\t" (number-to-string y))
   (unless (minesweeper-marked x y)
     (puthash (list x y)
 	     't
 	     minesweeper-marks)
     (setq minesweeper-mark-count (1+ minesweeper-mark-count))))
-
 
 (defun minesweeper-unmark (x y)
   "Removes the mark from (x, y). It can now be selected."
@@ -284,6 +285,15 @@
 	     nil
 	     minesweeper-marks)
     (setq minesweeper-mark-count (1- minesweeper-mark-count))))
+
+(defun minesweeper-invert-mark (x y)
+  "If (x, y) is marked, unmark it. Otherwise, mark it."
+  (when (and (< x minesweeper-board-width)
+             (< y minesweeper-board-height)
+	     (not (minesweeper-is-revealed x y)))
+    (if (minesweeper-marked x y)
+	(minesweeper-unmark x y)
+      (minesweeper-mark x y))))
 
 (defun minesweeper-marked (x y)
   "Returns 't if (x, y) is marked as having a mine, nil otherwise"
@@ -383,12 +393,19 @@
   "Set the marked status of the current square to the opposite of what it currently is"
   (interactive)
   (let ((col (current-column))
-	(row (1- (line-number-at-pos))))
-    (unless (minesweeper-is-revealed col row)
-      (if (minesweeper-marked col row)
-	  (minesweeper-unmark col row)
-	(minesweeper-mark col row))))
+  	(row (1- (line-number-at-pos))))
+    (minesweeper-invert-mark col row))
   (minesweeper-refresh-field))
+
+(defun minesweeper-toggle-mark-mouse (click)
+  "Set the marked status of the clicked-on square to the opposite of what it currently is."
+  (interactive "e")
+  (let ((window (elt (cadr click) 0))
+	(pos (elt (cadr click) 6)))
+    (minesweeper-invert-mark (car pos) (cdr pos))
+    (select-window window)
+    (minesweeper-refresh-field)))
+
 
 (defun minesweeper-choose ()
   "This is the function called when the user picks a mine."
@@ -401,7 +418,7 @@
   (minesweeper-debug "finishing choose"))
 
 (defun minesweeper-choose-around ()
-  "This is the function called by the user to pick all non-marked cells around point. It does not include the cell at point."
+  "Pick all non-marked cells around point. It does not include the cell at point."
   (interactive)
   (minesweeper-debug "starting choose-around")
   (let ((col (current-column))
@@ -409,7 +426,6 @@
     (catch 'game-end (minesweeper-pick-around col row)))
     (minesweeper-refresh-field)
     (minesweeper-debug "finishing choose-around"))
-
 
 (defun minesweeper-pick-around (x y)
   "Pick all the squares around (x, y). As a precondition, (x, y) should be zero."
