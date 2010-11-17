@@ -13,6 +13,7 @@
     (define-key map (kbd "p") 'previous-line)
     (define-key map (kbd "C-p") 'previous-line)
     (define-key map (kbd "c") 'minesweeper-choose-around)
+    (define-key map [mouse-2] 'minesweeper-choose-around-mouse)
     (define-key map (kbd "s") 'minesweeper-show-neighbors)
     map))
 
@@ -426,6 +427,17 @@
     (catch 'game-end (minesweeper-pick-around col row)))
     (minesweeper-refresh-field)
     (minesweeper-debug "finishing choose-around"))
+
+(defun minesweeper-choose-around-mouse (click)
+  "Choose all the non-marked cells around the one clicked on, not including the one clicked on."
+  (interactive "e")
+  (minesweeper-debug "beginning choose-around-mouse")
+  (let ((window (elt (cadr click) 0))
+	(pos (elt (cadr click) 6)))
+    (catch 'game-end (minesweeper-pick-around (car pos) (cdr pos)))
+    (select-window window)
+    (minesweeper-refresh-field))
+    (minesweeper-debug "ending choose-around-mouse"))
 
 (defun minesweeper-pick-around (x y)
   "Pick all the squares around (x, y). As a precondition, (x, y) should be zero."
