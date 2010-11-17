@@ -350,7 +350,7 @@
   (minesweeper-debug "Field is printed out"))
 
 (defun minesweeper-pick (x y)
-  "Select the square at position (x, y) to reveal."
+  "Reveals the square at position (x, y). If the square is zero, "
   (minesweeper-debug "starting pick with args:" (number-to-string x) " " (number-to-string y))
   (unless (or (>= x minesweeper-board-width)
 	      (>= y minesweeper-board-height)
