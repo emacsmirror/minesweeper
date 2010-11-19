@@ -22,7 +22,6 @@
   (use-local-map minesweeper-mode-map)
   (setq major-mode 'minesweeper-mode)
   (setq mode-name "Minesweeper")
-  ;; (setq font-lock-defaults '(minesweeper-font-faces))
   (toggle-read-only t)
   (minesweeper-begin-game))
 
@@ -62,20 +61,6 @@
 
 (defface minesweeper-neighbor
   '((t (:background "#C0FFFF"))) "face for the neighbors of point")
-
-(defvar minesweeper-font-faces
-  '(("-" . 'minesweeper-blank)
-    ("*" . 'minesweeper-marked)
-    ("0" . 'minesweeper-0)
-    ("1" . 'minesweeper-1)
-    ("2" . 'minesweeper-2)
-    ("3" . 'minesweeper-3)
-    ("4" . 'minesweeper-4)
-    ("5" . 'minesweeper-5)
-    ("6" . 'minesweeper-6)
-    ("7" . 'minesweeper-7)
-    ("8" . 'minesweeper-8))
-  "Font lock rules for minesweeper.")
 
 (defvar minesweeper-board-width 0
   "The number of columns on the Minesweeper field.")
@@ -152,17 +137,17 @@
 
 (defvar minesweeper-faces
   (let ((table (make-hash-table :test 'equal)))
-    (puthash ?0 minesweeper-0 table)
-    (puthash ?1 minesweeper-1 table)
-    (puthash ?2 minesweeper-2 table)
-    (puthash ?3 minesweeper-3 table)
-    (puthash ?4 minesweeper-4 table)
-    (puthash ?5 minesweeper-5 table)
-    (puthash ?6 minesweeper-6 table)
-    (puthash ?7 minesweeper-7 table)
-    (puthash ?8 minesweeper-8 table)
-    (puthash ?- minesweeper-blank table)
-    (puthash ?* minesweeper-marked table)
+    (puthash ?0 'minesweeper-0 table)
+    (puthash ?1 'minesweeper-1 table)
+    (puthash ?2 'minesweeper-2 table)
+    (puthash ?3 'minesweeper-3 table)
+    (puthash ?4 'minesweeper-4 table)
+    (puthash ?5 'minesweeper-5 table)
+    (puthash ?6 'minesweeper-6 table)
+    (puthash ?7 'minesweeper-7 table)
+    (puthash ?8 'minesweeper-8 table)
+    (puthash ?- 'minesweeper-blank table)
+    (puthash ?* 'minesweeper-marked table)
     table)
   "The hashtable mapping a character to the face it should have.")
 
@@ -321,7 +306,7 @@
 		    (overlay (make-overlay 0 0)))
 		(insert-char val 1)
 		(overlay-put overlay 'face (minesweeper-get-face val))
-		(move-overlay overlay (point) (1+ (point)))))
+		(move-overlay overlay (1- (point)) (point))))
 	 (newline))
     (unless reveal
       (newline)
