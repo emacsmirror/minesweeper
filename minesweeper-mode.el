@@ -513,15 +513,24 @@
 
 (defun minesweeper-get-integer (&optional message default)
   "Reads one nonzero integer from the minibuffer."
-  (setq default (if (integerp default)
-		    (number-to-string default)
-		    (or default "0")))
-  (let ((val (string-to-number (read-string (or message "Input an integer:")
-					    default))))
+  (setq default (cond ((not default)
+		       "0")
+		      ((integerp default)
+		       (number-to-string default))
+		      ((stringp default)
+		       default)
+		      (t "0")))
+  (let ((val (string-to-number (read-string (concat (or message "Input an integer")
+						    " (default "
+						    default
+						    "):")
+					    nil nil default))))
     (while (eq val 0)
       (setq val (string-to-number (read-string (concat (or message "Input an integer")
-						       ". Please, a nonzero integer. Try again:")
-					       (or default "0")))))
+						       ". Please, a nonzero integer. Try again. (default "
+						       default
+						       "):")
+					       nil nil default))))
     val))
 
 (defun minesweeper-show-neighbors ()
