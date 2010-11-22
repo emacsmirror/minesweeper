@@ -28,6 +28,8 @@
   (toggle-read-only t)
   (minesweeper-begin-game))
 
+(defun minesweeper-mode () "Major mode for playing Minesweeper. To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
+
 
 (defface minesweeper-blank
   '((t (:foreground "black"))) "face for blank spaces")
