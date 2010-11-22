@@ -65,83 +65,83 @@
 (defface minesweeper-neighbor
   '((t (:background "#C0FFFF"))) "face for the neighbors of point")
 
-(defvar minesweeper-board-width 0
+(defvar *minesweeper-board-width* 0
   "The number of columns on the Minesweeper field.")
 
-(defvar minesweeper-default-width 10
+(defvar *minesweeper-default-width* 10
   "The default board width")
 
-(defvar minesweeper-board-height 0
+(defvar *minesweeper-board-height* 0
   "The number of rows on the Minesweeper field.")
 
-(defvar minesweeper-default-height 10
+(defvar *minesweeper-default-height* 10
   "The default board height.")
 
-(defvar minesweeper-mines 0
+(defvar *minesweeper-mines* 0
   "The number of mines on the Minesweeper field.")
 
-(defvar minesweeper-default-mines 10
+(defvar *minesweeper-default-mines* 10
   "The default number of mines")
 
-(defvar minesweeper-field nil
+(defvar *minesweeper-field* nil
   "The minefield itself. If a mine is in the square, ?X is stored. Otherwise, the number of mines in neighboring squares is stored.")
 
-(defvar minesweeper-reveals nil
+(defvar *minesweeper-reveals* nil
   "Holds 't in (x, y) if (x, y) has been revealed")
 
-(defvar minesweeper-marks nil
+(defvar *minesweeper-marks* nil
   "Holds 't in (x, y) iff (x, y) has been marked. A marked square cannot be chosen.")
 
-(defvar minesweeper-blanks-left 0
+(defvar *minesweeper-blanks-left* 0
   "Holds the number of mines left. After 'minesweeper-init has been called, the user will win the game when this becomes zero again.")
 
 (defvar *minesweeper-debug* nil
   "when 't, print debugging information.")
 
-(defvar minesweeper-first-move 't
+(defvar *minesweeper-first-move* 't
   "If 't, the next move is the first move. So if a mine is selected, move that mine elsewhere")
 
-(defvar minesweeper-wins 0
+(defvar *minesweeper-wins* 0
   "The number of times the player has won the game this session")
 
-(defvar minesweeper-losses 0
+(defvar *minesweeper-losses* 0
   "The number of times the player has lost the game this session")
 
-(defvar minesweeper-game-started nil
+(defvar *minesweeper-game-started* nil
   "The time the current game started.")
 
-(defvar minesweeper-min-free-squares 1
+(defvar *minesweeper-min-free-squares* 1
   "The minimum number of squares which must be free.")
 
-(defvar minesweeper-top-overlay
+(defvar *minesweeper-top-overlay*
   (let ((overlay (make-overlay 0 0)))
     (overlay-put overlay 'face 'minesweeper-neighbor)
     overlay)
   "The overlay to go above point")
 
-(defvar minesweeper-left-overlay
+(defvar *minesweeper-left-overlay*
   (let ((overlay (make-overlay 0 0)))
     (overlay-put overlay 'face 'minesweeper-neighbor)
     overlay)
   "The overlay to go left of point")
 
-(defvar minesweeper-right-overlay
+(defvar *minesweeper-right-overlay*
   (let ((overlay (make-overlay 0 0)))
     (overlay-put overlay 'face 'minesweeper-neighbor)
     overlay)
   "The overlay to go right of point")
 
-(defvar minesweeper-bottom-overlay
+(defvar *minesweeper-bottom-overlay*
   (let ((overlay (make-overlay 0 0)))
     (overlay-put overlay 'face 'minesweeper-neighbor)
     overlay)
   "The overlay to go below point")
 
-(defvar minesweeper-mark-count
+(defvar *minesweeper-mark-count*
   0
   "The number of mines the user has marked.")
 
-(defvar minesweeper-faces
+(defvar *minesweeper-faces*
   (let ((table (make-hash-table :test 'equal)))
     (puthash ?0 'minesweeper-0 table)
     (puthash ?1 'minesweeper-1 table)
@@ -159,18 +159,18 @@
 
 (defun minesweeper-begin-game (&optional width height mines)
   (minesweeper-debug "beginning the game")
-  (if (y-or-n-p (concat (number-to-string (or width minesweeper-default-width))
+  (if (y-or-n-p (concat (number-to-string (or width *minesweeper-default-width*))
 			" by "
-			(number-to-string (or height minesweeper-default-height))
+			(number-to-string (or height *minesweeper-default-height*))
 			" with "
-			(number-to-string (or mines minesweeper-default-mines))
+			(number-to-string (or mines *minesweeper-default-mines*))
 			" mines ok? "))
-      (minesweeper-init (or width minesweeper-default-width)
-			(or height minesweeper-default-height)
-			(or mines minesweeper-default-mines))
-    (let ((width (minesweeper-get-integer "Minefield width? " (number-to-string (or width minesweeper-default-width))))
-	  (height (minesweeper-get-integer "Minefield height? " (number-to-string (or height minesweeper-default-height))))
-	  (mines (minesweeper-get-integer "Number of mines? " (number-to-string (or mines minesweeper-default-mines)))))
+      (minesweeper-init (or width *minesweeper-default-width*)
+			(or height *minesweeper-default-height*)
+			(or mines *minesweeper-default-mines*))
+    (let ((width (minesweeper-get-integer "Minefield width? " (number-to-string (or width *minesweeper-default-width*))))
+	  (height (minesweeper-get-integer "Minefield height? " (number-to-string (or height *minesweeper-default-height*))))
+	  (mines (minesweeper-get-integer "Number of mines? " (number-to-string (or mines *minesweeper-default-mines*)))))
       (minesweeper-init width height mines)))
   (minesweeper-print-field)
   (message "Good luck!"))
@@ -178,50 +178,50 @@
 (defun minesweeper-init (&optional width height mines)
   "Begin a game of Minesweeper with a board that's 'width by 'height size containing 'mines mines."
   (minesweeper-debug "initializing the game")
-  (setq minesweeper-board-width (or width minesweeper-default-width)
-	minesweeper-board-height (or height minesweeper-default-height)
-	minesweeper-mines (or mines minesweeper-default-mines)
-	minesweeper-field (make-hash-table :test 'equal)
-	minesweeper-reveals (make-hash-table :test 'equal)
-	minesweeper-marks (make-hash-table :test 'equal)
-	minesweeper-blanks-left (- (* minesweeper-board-width
-				     minesweeper-board-height)
-				  minesweeper-mines)
-	minesweeper-first-move 't
-	minesweeper-game-started (current-time)
-	minesweeper-mark-count 0)
+  (setq *minesweeper-board-width* (or width *minesweeper-default-width*)
+	*minesweeper-board-height* (or height *minesweeper-default-height*)
+	*minesweeper-mines* (or mines *minesweeper-default-mines*)
+	*minesweeper-field* (make-hash-table :test 'equal)
+	*minesweeper-reveals* (make-hash-table :test 'equal)
+	*minesweeper-marks* (make-hash-table :test 'equal)
+	*minesweeper-blanks-left* (- (* *minesweeper-board-width*
+				     *minesweeper-board-height*)
+				  *minesweeper-mines*)
+	*minesweeper-first-move* 't
+	*minesweeper-game-started* (current-time)
+	*minesweeper-mark-count* 0)
   (minesweeper-debug "setting things over")
-  (while (< minesweeper-blanks-left minesweeper-min-free-squares)
-    (setq minesweeper-mines (minesweeper-get-integer (format "Too many mines. You can have at most %d mines. Number of mines?" (- (* minesweeper-board-width
-																     minesweeper-board-height)
-																  minesweeper-min-free-squares))
-						     minesweeper-default-mines)
-	  minesweeper-blanks-left (- (* minesweeper-board-width
-				     minesweeper-board-height)
-				  minesweeper-mines))))
+  (while (< *minesweeper-blanks-left* *minesweeper-min-free-squares*)
+    (setq *minesweeper-mines* (minesweeper-get-integer (format "Too many mines. You can have at most %d mines. Number of mines?" (- (* *minesweeper-board-width*
+																     *minesweeper-board-height*)
+																  *minesweeper-min-free-squares*))
+						     *minesweeper-default-mines*)
+	  *minesweeper-blanks-left* (- (* *minesweeper-board-width*
+				     *minesweeper-board-height*)
+				  *minesweeper-mines*))))
 
 
 (defun minesweeper-fill-field (protect-x protect-y)
-  "Fills 'minesweeper-field with 'minesweeper-mines mines, and builds the neighbor count. It will not place any mines in the square (protect-x, protect-y)."
+  "Fills '*minesweeper-field* with '*minesweeper-mines* mines, and builds the neighbor count. It will not place any mines in the square (protect-x, protect-y)."
   (minesweeper-debug "filling the field")
-  (minesweeper-for x 0 (1- minesweeper-board-width)
+  (minesweeper-for x 0 (1- *minesweeper-board-width*)
        (minesweeper-debug "inside outer loop -- x is " (number-to-string x))
-       (minesweeper-for y 0 (1- minesweeper-board-height)
+       (minesweeper-for y 0 (1- *minesweeper-board-height*)
 	    (minesweeper-debug "inside inner loop -- setting up mine " (number-to-string x) " " (number-to-string y))
 	    (minesweeper-set-mine x y ?0)
 	    (minesweeper-hide x y)
 	    (minesweeper-unmark x y)))
   (minesweeper-debug "done setting zeros; now inserting mines")
-  (minesweeper-insert-mines minesweeper-mines protect-x protect-y))
+  (minesweeper-insert-mines *minesweeper-mines* protect-x protect-y))
 
 (defun minesweeper-insert-mines (count protect-x protect-y)
   "insert 'count mines into the minefield, and build up the neighbor count. There can't be a mine at the square (protect-x, protect-y)"
   (minesweeper-debug "inserting " (number-to-string count) " mines")
-  (let* ((square-count (1- (* minesweeper-board-width minesweeper-board-height)))
+  (let* ((square-count (1- (* *minesweeper-board-width* *minesweeper-board-height*)))
 	 (mines (make-vector square-count (list 0 0)))
 	 (pos 0))
-    (minesweeper-for x 0 (1- minesweeper-board-width)
-		     (minesweeper-for y 0 (1- minesweeper-board-height)
+    (minesweeper-for x 0 (1- *minesweeper-board-width*)
+		     (minesweeper-for y 0 (1- *minesweeper-board-height*)
 				      (unless (and (eq x protect-x)
 						   (eq y protect-y))
 					(minesweeper-debug "setting " (number-to-string x) "\t" (number-to-string y))
@@ -241,7 +241,7 @@
   (cond ((or reveal
 	     (minesweeper-is-revealed x y))
 	 (gethash (list x y)
-		  minesweeper-field))
+		  *minesweeper-field*))
 	((minesweeper-marked x y)
 	 ?*)
 	('t
@@ -251,24 +251,24 @@
   "Inserts val into the mine at (x, y)"
   (puthash (list x y)
 	   val
-	   minesweeper-field))
+	   *minesweeper-field*))
 
 (defun minesweeper-reveal (x y)
   "Reveals (x, y)."
   (puthash (list x y)
 	   't
-	   minesweeper-reveals))
+	   *minesweeper-reveals*))
 
 (defun minesweeper-hide (x y)
   "Hides (x, y)."
   (puthash (list x y)
 	   nil
-	   minesweeper-reveals))
+	   *minesweeper-reveals*))
 
 (defun minesweeper-is-revealed (x y)
   "Returns 't if (x, y) is revealed, nil otherwise"
   (gethash (list x y)
-	   minesweeper-reveals))
+	   *minesweeper-reveals*))
 
 (defun minesweeper-mark (x y)
   "Marks the square (x, y) as having a mine. It can't be selected until it is unmarked"
@@ -276,21 +276,21 @@
   (unless (minesweeper-marked x y)
     (puthash (list x y)
 	     't
-	     minesweeper-marks)
-    (setq minesweeper-mark-count (1+ minesweeper-mark-count))))
+	     *minesweeper-marks*)
+    (setq *minesweeper-mark-count* (1+ *minesweeper-mark-count*))))
 
 (defun minesweeper-unmark (x y)
   "Removes the mark from (x, y). It can now be selected."
   (when (minesweeper-marked x y)
     (puthash (list x y)
 	     nil
-	     minesweeper-marks)
-    (setq minesweeper-mark-count (1- minesweeper-mark-count))))
+	     *minesweeper-marks*)
+    (setq *minesweeper-mark-count* (1- *minesweeper-mark-count*))))
 
 (defun minesweeper-invert-mark (x y)
   "If (x, y) is marked, unmark it. Otherwise, mark it."
-  (when (and (< x minesweeper-board-width)
-             (< y minesweeper-board-height)
+  (when (and (< x *minesweeper-board-width*)
+             (< y *minesweeper-board-height*)
 	     (not (minesweeper-is-revealed x y)))
     (if (minesweeper-marked x y)
 	(minesweeper-unmark x y)
@@ -299,7 +299,7 @@
 (defun minesweeper-marked (x y)
   "Returns 't if (x, y) is marked as having a mine, nil otherwise"
   (gethash (list x y)
-	   minesweeper-marks))
+	   *minesweeper-marks*))
 
 (defun minesweeper-inform-around (x y &optional amount)
   "takes in a square, and increases the values of all its empty neighbors by 'amount"
@@ -326,8 +326,8 @@
 			       (eq newy y))
 			  (< newx 0)
 			  (< newy 0)
-			  (>= newx minesweeper-board-width)
-			  (>= newy minesweeper-board-height))
+			  (>= newx *minesweeper-board-width*)
+			  (>= newy *minesweeper-board-height*))
 		(push (list newx newy)
 		      neighbors))))
     neighbors))
@@ -337,8 +337,8 @@
   (minesweeper-debug "Printing out the field")
   (let ((inhibit-read-only t))
     (erase-buffer)
-    (minesweeper-for y 0 (1- minesweeper-board-height)
-	 (minesweeper-for x 0 (1- minesweeper-board-width)
+    (minesweeper-for y 0 (1- *minesweeper-board-height*)
+	 (minesweeper-for x 0 (1- *minesweeper-board-width*)
               (let ((val (minesweeper-view-mine x y reveal))
 		    (overlay (make-overlay 0 0)))
 		(insert-char val 1)
@@ -347,24 +347,24 @@
 	 (newline))
     (unless reveal
       (newline)
-      (insert (number-to-string minesweeper-mark-count)
+      (insert (number-to-string *minesweeper-mark-count*)
 	      " of "
-	      (number-to-string minesweeper-mines)
+	      (number-to-string *minesweeper-mines*)
 	      " marked.")))
   (minesweeper-debug "Field is printed out"))
 
 (defun minesweeper-pick (x y)
   "Reveals the square at position (x, y). If the square is zero, "
   (minesweeper-debug "starting pick with args:" (number-to-string x) " " (number-to-string y))
-  (unless (or (>= x minesweeper-board-width)
-	      (>= y minesweeper-board-height)
+  (unless (or (>= x *minesweeper-board-width*)
+	      (>= y *minesweeper-board-height*)
 	      (minesweeper-is-revealed x y)
 	      (minesweeper-marked x y))
     (minesweeper-debug "in pick, valid position chosen")
-    (when minesweeper-first-move
+    (when *minesweeper-first-move*
       (minesweeper-debug "in pick, first-move is on. Calling view-mine.")
       (minesweeper-fill-field x y)
-      (setq minesweeper-first-move nil))
+      (setq *minesweeper-first-move* nil))
     (minesweeper-debug "in pick, done with first-move check. Getting the value of the square.")
     (let ((val (minesweeper-view-mine x y 't)))
       (minesweeper-debug "view-mine called. The value at " (number-to-string x) ", " (number-to-string y) " is " (make-string 1 val))
@@ -383,7 +383,7 @@
 			  (minesweeper-marked cur-x cur-y))
 		(minesweeper-debug "it's not revealed, so reveal it")
 		(minesweeper-reveal cur-x cur-y)
-		(if (eq (setq minesweeper-blanks-left (1- minesweeper-blanks-left))
+		(if (eq (setq *minesweeper-blanks-left* (1- *minesweeper-blanks-left*))
 			0)
 		    (progn (minesweeper-win-game)
 			   (throw 'game-end nil))
@@ -454,7 +454,7 @@
 
 (defun minesweeper-lose-game (x y)
   "Print the lose-game message and prompt for a new one."
-  (let ((game-duration (time-subtract (current-time) minesweeper-game-started)))
+  (let ((game-duration (time-subtract (current-time) *minesweeper-game-started*)))
     (minesweeper-end-game (concat "You lose. This game took "
 				  (format-seconds "%H, %M, %S. " (+ (* (car game-duration)
 								       (expt 2 16))
@@ -464,29 +464,29 @@
 				  ", "
 				  (number-to-string y)
 				  ") which was a bomb. You've won "
-				  (number-to-string minesweeper-wins)
+				  (number-to-string *minesweeper-wins*)
 				  " and lost "
-				  (number-to-string (setq minesweeper-losses (1+ minesweeper-losses)))
+				  (number-to-string (setq *minesweeper-losses* (1+ *minesweeper-losses*)))
 				  ". Another game? "))))
 
 (defun minesweeper-win-game ()
   "Print the win-game message and prompt for a new one."
-  (let ((game-duration (time-subtract (current-time) minesweeper-game-started)))
+  (let ((game-duration (time-subtract (current-time) *minesweeper-game-started*)))
     (minesweeper-end-game (concat "Congrats! You've won in "
 				  (format-seconds "%H, %M, %S. " (+ (* (car game-duration)
 								       (expt 2 16))
 								    (cadr game-duration)))
 				  "You've won "
-				  (number-to-string (setq minesweeper-wins (1+ minesweeper-wins)))
+				  (number-to-string (setq *minesweeper-wins* (1+ *minesweeper-wins*)))
 				  " and lost "
-				  (number-to-string minesweeper-losses)
+				  (number-to-string *minesweeper-losses*)
 				  ". Another game? "))))
 
 (defun minesweeper-end-game (message)
   "ends the game, prompting for a new game with message"
   (minesweeper-print-field 't)
   (when (y-or-n-p message)
-      (minesweeper-begin-game minesweeper-board-width minesweeper-board-height minesweeper-mines)))
+      (minesweeper-begin-game *minesweeper-board-width* *minesweeper-board-height* *minesweeper-mines*)))
 
 (defmacro minesweeper-for (var init end &rest body)
   "Helper function. executes 'body repeatedly, with 'var assigned values starting at 'init, and ending at 'end, increasing by one each iteration."
@@ -538,31 +538,31 @@
   (let ((col (current-column))
 	(row (1- (line-number-at-pos)))
 	(point (point)))
-    (unless (or (>= col minesweeper-board-width)
-		(>= row minesweeper-board-height))
+    (unless (or (>= col *minesweeper-board-width*)
+		(>= row *minesweeper-board-height*))
       (if (eq row 0);; "top" overlay
-	  (move-overlay minesweeper-top-overlay 0 0 (get-buffer "minesweeper"))
-	(let ((center (- point minesweeper-board-width 1)))
-	  (move-overlay minesweeper-top-overlay
+	  (move-overlay *minesweeper-top-overlay* 0 0 (get-buffer "minesweeper"))
+	(let ((center (- point *minesweeper-board-width* 1)))
+	  (move-overlay *minesweeper-top-overlay*
 			(- center (min col 1))
-			(+ center 1 (if (>= col (1- minesweeper-board-width)) 0 1))
+			(+ center 1 (if (>= col (1- *minesweeper-board-width*)) 0 1))
 			(get-buffer "minesweeper"))))
 
       (if (eq col 0);; "left" overlay
-	  (move-overlay minesweeper-left-overlay 0 0 (get-buffer "minesweeper"))
-	(move-overlay minesweeper-left-overlay (1- point) point (get-buffer "minesweeper")))
+	  (move-overlay *minesweeper-left-overlay* 0 0 (get-buffer "minesweeper"))
+	(move-overlay *minesweeper-left-overlay* (1- point) point (get-buffer "minesweeper")))
 
-      (if (>= col (1- minesweeper-board-width)) ;; "right" overlay
-	  (move-overlay minesweeper-right-overlay 0 0 (get-buffer "minesweeper"))
-	(move-overlay minesweeper-right-overlay (1+ point) (+ point 2) (get-buffer "minesweeper")))
+      (if (>= col (1- *minesweeper-board-width*)) ;; "right" overlay
+	  (move-overlay *minesweeper-right-overlay* 0 0 (get-buffer "minesweeper"))
+	(move-overlay *minesweeper-right-overlay* (1+ point) (+ point 2) (get-buffer "minesweeper")))
 
-      (if (>= row (1- minesweeper-board-height)) ;; "bottom" overlay
-	  (move-overlay minesweeper-bottom-overlay 0 0 (get-buffer "minesweeper"))
-	(let ((center (+ point minesweeper-board-width 1)))
-	  (move-overlay minesweeper-bottom-overlay
+      (if (>= row (1- *minesweeper-board-height*)) ;; "bottom" overlay
+	  (move-overlay *minesweeper-bottom-overlay* 0 0 (get-buffer "minesweeper"))
+	(let ((center (+ point *minesweeper-board-width* 1)))
+	  (move-overlay *minesweeper-bottom-overlay*
 			(- center (if (eq col 0) 0 1))
-			(+ center 1 (if (>= col (1- minesweeper-board-width)) 0 1))
+			(+ center 1 (if (>= col (1- *minesweeper-board-width*)) 0 1))
 			(get-buffer "minesweeper")))))))
 
 (defun minesweeper-get-face (val)
-  (gethash val minesweeper-faces))
+  (gethash val *minesweeper-faces*))
