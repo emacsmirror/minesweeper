@@ -460,10 +460,12 @@
 (defun minesweeper-pick-around (x y)
   "Pick all the squares around (x, y). As a precondition, (x, y) should be zero."
   (minesweeper-debug "called pick-around " (number-to-string x) " " (number-to-string y))
-  (mapcar '(lambda (position)
-	     (minesweeper-debug "called pick-around-helper " (number-to-string x) " " (number-to-string y))
-	     (minesweeper-pick (car position) (cadr position)))
-	  (minesweeper-neighbors x y)))
+  (when (and (< x *minesweeper-board-width*)
+	     (< y *minesweeper-board-height*))
+    (mapcar '(lambda (position)
+	       (minesweeper-debug "called pick-around-helper " (number-to-string x) " " (number-to-string y))
+	       (minesweeper-pick (car position) (cadr position)))
+	    (minesweeper-neighbors x y))))
 
 (defun minesweeper-lose-game (x y)
   "Print the lose-game message and prompt for a new one."
