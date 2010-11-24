@@ -26,6 +26,9 @@
   (setq major-mode 'minesweeper-mode)
   (setq mode-name "Minesweeper")
   (toggle-read-only t)
+  (setq *minesweeper-idle-timer* (run-with-idle-timer *minesweeper-idle-delay*
+						    t
+						    'minesweeper-show-neighbors))
   (minesweeper-begin-game))
 
 (defun minesweeper-mode () "Major mode for playing Minesweeper. To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
@@ -158,6 +161,12 @@
     (puthash ?* 'minesweeper-marked table)
     table)
   "The hashtable mapping a character to the face it should have.")
+
+(defvar *minesweeper-idle-timer* nil
+  "The timer used to highlight neighbors")
+
+(defvar *minesweeper-idle-delay* 0.125
+  "The time Emacs must be idle before highlighting the neigbors of point.")
 
 (defun minesweeper-begin-game (&optional width height mines)
   (minesweeper-debug "beginning the game")
@@ -540,31 +549,35 @@
   (let ((col (current-column))
 	(row (1- (line-number-at-pos)))
 	(point (point)))
-    (unless (or (>= col *minesweeper-board-width*)
-		(>= row *minesweeper-board-height*))
-      (if (eq row 0);; "top" overlay
-	  (move-overlay *minesweeper-top-overlay* 0 0 (get-buffer "minesweeper"))
-	(let ((center (- point *minesweeper-board-width* 1)))
-	  (move-overlay *minesweeper-top-overlay*
-			(- center (min col 1))
-			(+ center 1 (if (>= col (1- *minesweeper-board-width*)) 0 1))
-			(get-buffer "minesweeper"))))
+    (if (or (>= col *minesweeper-board-width*)
+	    (>= row *minesweeper-board-height*))
+	(progn (move-overlay *minesweeper-top-overlay* 0 0 (get-buffer "minesweeper"))
+	       (move-overlay *minesweeper-left-overlay* 0 0 (get-buffer "minesweeper"))
+	       (move-overlay *minesweeper-right-overlay* 0 0 (get-buffer "minesweeper"))
+	       (move-overlay *minesweeper-bottom-overlay* 0 0 (get-buffer "minesweeper")))
+	(progn (if (eq row 0);; "top" overlay
+		   (move-overlay *minesweeper-top-overlay* 0 0 (get-buffer "minesweeper"))
+		 (let ((center (- point *minesweeper-board-width* 1)))
+		   (move-overlay *minesweeper-top-overlay*
+				 (- center (min col 1))
+				 (+ center 1 (if (>= col (1- *minesweeper-board-width*)) 0 1))
+				 (get-buffer "minesweeper"))))
 
-      (if (eq col 0);; "left" overlay
-	  (move-overlay *minesweeper-left-overlay* 0 0 (get-buffer "minesweeper"))
-	(move-overlay *minesweeper-left-overlay* (1- point) point (get-buffer "minesweeper")))
+	       (if (eq col 0);; "left" overlay
+		   (move-overlay *minesweeper-left-overlay* 0 0 (get-buffer "minesweeper"))
+		 (move-overlay *minesweeper-left-overlay* (1- point) point (get-buffer "minesweeper")))
 
-      (if (>= col (1- *minesweeper-board-width*)) ;; "right" overlay
-	  (move-overlay *minesweeper-right-overlay* 0 0 (get-buffer "minesweeper"))
-	(move-overlay *minesweeper-right-overlay* (1+ point) (+ point 2) (get-buffer "minesweeper")))
+	       (if (>= col (1- *minesweeper-board-width*)) ;; "right" overlay
+		   (move-overlay *minesweeper-right-overlay* 0 0 (get-buffer "minesweeper"))
+		 (move-overlay *minesweeper-right-overlay* (1+ point) (+ point 2) (get-buffer "minesweeper")))
 
-      (if (>= row (1- *minesweeper-board-height*)) ;; "bottom" overlay
-	  (move-overlay *minesweeper-bottom-overlay* 0 0 (get-buffer "minesweeper"))
-	(let ((center (+ point *minesweeper-board-width* 1)))
-	  (move-overlay *minesweeper-bottom-overlay*
-			(- center (if (eq col 0) 0 1))
-			(+ center 1 (if (>= col (1- *minesweeper-board-width*)) 0 1))
-			(get-buffer "minesweeper")))))))
+	       (if (>= row (1- *minesweeper-board-height*)) ;; "bottom" overlay
+		   (move-overlay *minesweeper-bottom-overlay* 0 0 (get-buffer "minesweeper"))
+		 (let ((center (+ point *minesweeper-board-width* 1)))
+		   (move-overlay *minesweeper-bottom-overlay*
+				 (- center (if (eq col 0) 0 1))
+				 (+ center 1 (if (>= col (1- *minesweeper-board-width*)) 0 1))
+				 (get-buffer "minesweeper"))))))))
 
 (defun minesweeper-get-face (val)
   (gethash val *minesweeper-faces*))
