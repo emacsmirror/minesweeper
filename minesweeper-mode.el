@@ -26,6 +26,8 @@
   (setq major-mode 'minesweeper-mode)
   (setq mode-name "Minesweeper")
   (toggle-read-only t)
+  (when *minesweeper-idle-timer*
+    (cancel-timer *minesweeper-idle-timer*))
   (setq *minesweeper-idle-timer* (run-with-idle-timer *minesweeper-idle-delay*
 						    t
 						    'minesweeper-show-neighbors))
@@ -165,7 +167,7 @@
 (defvar *minesweeper-idle-timer* nil
   "The timer used to highlight neighbors")
 
-(defvar *minesweeper-idle-delay* 0.125
+(defvar *minesweeper-idle-delay* 0.0625
   "The time Emacs must be idle before highlighting the neigbors of point.")
 
 (defun minesweeper-begin-game (&optional width height mines)
