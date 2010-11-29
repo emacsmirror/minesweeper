@@ -14,7 +14,7 @@
     (define-key map (kbd "C-p") 'previous-line)
     (define-key map (kbd "c") 'minesweeper-choose-around)
     (define-key map [mouse-2] 'minesweeper-choose-around-mouse)
-    (define-key map (kbd "s") 'minesweeper-show-neighbors)
+    (define-key map (kbd "s") 'minesweeper-toggle-show-neighbors)
     map))
 
 (defun minesweeper () "Major mode for playing Minesweeper in Emacs.
@@ -585,3 +585,18 @@
 
 (defun minesweeper-get-face (val)
   (gethash val *minesweeper-faces*))
+
+(defun minesweeper-toggle-show-neighbors ()
+  "Toggles whether neighbors are shown."
+  (interactive)
+  (if *minesweeper-idle-timer*
+      (progn (cancel-timer *minesweeper-idle-timer*)
+	     (move-overlay *minesweeper-top-overlay* 0 0 (get-buffer "minesweeper"))
+	     (move-overlay *minesweeper-left-overlay* 0 0 (get-buffer "minesweeper"))
+	     (move-overlay *minesweeper-right-overlay* 0 0 (get-buffer "minesweeper"))
+	     (move-overlay *minesweeper-bottom-overlay* 0 0 (get-buffer "minesweeper"))
+	     (setq *minesweeper-idle-timer* nil))
+    (setq *minesweeper-idle-timer* (run-with-idle-timer *minesweeper-idle-delay*
+							t
+							'minesweeper-show-neighbors))))
+
