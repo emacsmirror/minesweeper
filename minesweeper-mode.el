@@ -171,6 +171,7 @@
   "The time Emacs must be idle before highlighting the neigbors of point.")
 
 (defun minesweeper-begin-game (&optional width height mines)
+  "Prompt the user for the minefield size and number of mines, then initialize the game."
   (minesweeper-debug "beginning the game")
   (if (y-or-n-p (concat (number-to-string (or width *minesweeper-default-width*))
 			" by "
@@ -203,7 +204,7 @@
 	*minesweeper-first-move* 't
 	*minesweeper-game-started* (current-time)
 	*minesweeper-mark-count* 0)
-  (minesweeper-debug "setting things over")
+  (minesweeper-debug "most global vars set -- checking for overpopulation of mines.")
   (while (< *minesweeper-blanks-left* *minesweeper-min-free-squares*)
     (setq *minesweeper-mines* (minesweeper-get-integer (format "Too many mines. You can have at most %d mines. Number of mines?" (- (* *minesweeper-board-width*
 																     *minesweeper-board-height*)
@@ -549,7 +550,7 @@
     val))
 
 (defun minesweeper-show-neighbors ()
-  (interactive)
+  "If point is within the minefield, highlight as many of the eight squares around point that are in the minefield."
   (let ((col (current-column))
 	(row (1- (line-number-at-pos)))
 	(point (point)))
@@ -574,6 +575,7 @@
 			    (get-buffer "minesweeper")))))))
 
 (defun minesweeper-get-face (val)
+  "Gets the face for the character value of val. Proper inputs are ?0 through ?8, ?- and ?*"
   (gethash val *minesweeper-faces*))
 
 (defun minesweeper-toggle-show-neighbors ()
