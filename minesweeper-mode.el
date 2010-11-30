@@ -553,35 +553,25 @@
   (let ((col (current-column))
 	(row (1- (line-number-at-pos)))
 	(point (point)))
-    (if (or (>= col *minesweeper-board-width*)
-	    (>= row *minesweeper-board-height*))
-	(progn (move-overlay *minesweeper-top-overlay* 0 0 (get-buffer "minesweeper"))
-	       (move-overlay *minesweeper-left-overlay* 0 0 (get-buffer "minesweeper"))
-	       (move-overlay *minesweeper-right-overlay* 0 0 (get-buffer "minesweeper"))
-	       (move-overlay *minesweeper-bottom-overlay* 0 0 (get-buffer "minesweeper")))
-	(progn (if (eq row 0);; "top" overlay
-		   (move-overlay *minesweeper-top-overlay* 0 0 (get-buffer "minesweeper"))
-		 (let ((center (- point *minesweeper-board-width* 1)))
-		   (move-overlay *minesweeper-top-overlay*
-				 (- center (min col 1))
-				 (+ center 1 (if (>= col (1- *minesweeper-board-width*)) 0 1))
-				 (get-buffer "minesweeper"))))
-
-	       (if (eq col 0);; "left" overlay
-		   (move-overlay *minesweeper-left-overlay* 0 0 (get-buffer "minesweeper"))
-		 (move-overlay *minesweeper-left-overlay* (1- point) point (get-buffer "minesweeper")))
-
-	       (if (>= col (1- *minesweeper-board-width*)) ;; "right" overlay
-		   (move-overlay *minesweeper-right-overlay* 0 0 (get-buffer "minesweeper"))
-		 (move-overlay *minesweeper-right-overlay* (1+ point) (+ point 2) (get-buffer "minesweeper")))
-
-	       (if (>= row (1- *minesweeper-board-height*)) ;; "bottom" overlay
-		   (move-overlay *minesweeper-bottom-overlay* 0 0 (get-buffer "minesweeper"))
-		 (let ((center (+ point *minesweeper-board-width* 1)))
-		   (move-overlay *minesweeper-bottom-overlay*
-				 (- center (if (eq col 0) 0 1))
-				 (+ center 1 (if (>= col (1- *minesweeper-board-width*)) 0 1))
-				 (get-buffer "minesweeper"))))))))
+	(minesweeper-reset-neighbor-overlays)
+	(when (and (< col *minesweeper-board-width*)
+		   (< row *minesweeper-board-height*))
+	  (when (> row 0);; "top" overlay
+	    (let ((center (- point *minesweeper-board-width* 1)))
+	      (move-overlay *minesweeper-top-overlay*
+			    (- center (min col 1))
+			    (+ center 1 (if (>= col (1- *minesweeper-board-width*)) 0 1))
+			    (get-buffer "minesweeper"))))
+	  (when (> col 0);; "left" overlay
+	    (move-overlay *minesweeper-left-overlay* (1- point) point (get-buffer "minesweeper")))
+	  (when (< col (1- *minesweeper-board-width*)) ;; "right" overlay
+	    (move-overlay *minesweeper-right-overlay* (1+ point) (+ point 2) (get-buffer "minesweeper")))
+	  (when (< row (1- *minesweeper-board-height*)) ;; "bottom" overlay
+	    (let ((center (+ point *minesweeper-board-width* 1)))
+	      (move-overlay *minesweeper-bottom-overlay*
+			    (- center (if (eq col 0) 0 1))
+			    (+ center 1 (if (>= col (1- *minesweeper-board-width*)) 0 1))
+			    (get-buffer "minesweeper")))))))
 
 (defun minesweeper-get-face (val)
   (gethash val *minesweeper-faces*))
@@ -591,12 +581,15 @@
   (interactive)
   (if *minesweeper-idle-timer*
       (progn (cancel-timer *minesweeper-idle-timer*)
-	     (move-overlay *minesweeper-top-overlay* 0 0 (get-buffer "minesweeper"))
-	     (move-overlay *minesweeper-left-overlay* 0 0 (get-buffer "minesweeper"))
-	     (move-overlay *minesweeper-right-overlay* 0 0 (get-buffer "minesweeper"))
-	     (move-overlay *minesweeper-bottom-overlay* 0 0 (get-buffer "minesweeper"))
+	     (minesweeper-reset-neighbor-overlays)
 	     (setq *minesweeper-idle-timer* nil))
     (setq *minesweeper-idle-timer* (run-with-idle-timer *minesweeper-idle-delay*
 							t
 							'minesweeper-show-neighbors))))
 
+(defun minesweeper-reset-neighbor-overlays ()
+  "Move all the neighbor overlays to the beginning of the buffer. They won't be seen."
+  (move-overlay *minesweeper-top-overlay* 0 0 (get-buffer "minesweeper"))
+  (move-overlay *minesweeper-left-overlay* 0 0 (get-buffer "minesweeper"))
+  (move-overlay *minesweeper-right-overlay* 0 0 (get-buffer "minesweeper"))
+  (move-overlay *minesweeper-bottom-overlay* 0 0 (get-buffer "minesweeper")))
