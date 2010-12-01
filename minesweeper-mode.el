@@ -353,11 +353,7 @@
     (erase-buffer)
     (minesweeper-for y 0 (1- *minesweeper-board-height*)
 	 (minesweeper-for x 0 (1- *minesweeper-board-width*)
-              (let ((val (minesweeper-view-mine x y reveal))
-		    (overlay (make-overlay 0 0)))
-		(insert-char val 1)
-		(overlay-put overlay 'face (minesweeper-get-face val))
-		(move-overlay overlay (1- (point)) (point))))
+			  (minesweeper-insert-value (minesweeper-view-mine x y reveal)))
 	 (newline))
     (unless reveal
       (newline)
@@ -434,7 +430,9 @@
   (let ((col (current-column))
 	(row (1- (line-number-at-pos))))
     (catch 'game-end (minesweeper-pick col row)
-	   (minesweeper-refresh-field)))
+	   (if (eq (minesweeper-view-mine col row) ?0)
+	       (minesweeper-refresh-field)
+	     (minesweeper-refresh-square col row))))
   (minesweeper-debug "finishing choose"))
 
 (defun minesweeper-choose-around ()
@@ -526,6 +524,22 @@
     (goto-char (point-min))
     (forward-char col)
     (next-line row)))
+
+(defun minesweeper-refresh-square (col row)
+  "Refreshes the printed value of (col, row)"
+  (let ((val (minesweeper-view-mine col row)))
+    (goto-line row)
+    (move-to-column col)
+    (delete-char)
+    (minesweeper-insert-value (minesweeper-view-mine col row))))
+
+(defun minesweeper-insert-value (val)
+  "Outputs val, properly colored, at point."
+  (let ((overlay (make-overlay 0 0)))
+    (overlay-put overlay 'face (minesweeper-get-face val))
+    (insert-char val 1)
+    (move-overlay overlay (1- (point)) (point))))
+
 
 (defun minesweeper-get-integer (&optional message default)
   "Reads one nonzero integer from the minibuffer."
