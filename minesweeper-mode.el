@@ -114,7 +114,7 @@
 (defvar *minesweeper-losses* 0
   "The number of times the player has lost the game this session")
 
-(defvar *minesweeper-game-started* nil
+(defvar *minesweeper-game-epoch* nil
   "The time the current game started.")
 
 (defvar *minesweeper-min-free-squares* 1
@@ -170,6 +170,9 @@
 (defvar *minesweeper-idle-delay* 0.0625
   "The time Emacs must be idle before highlighting the neigbors of point.")
 
+(defvar *minesweeper-game-over* nil
+  "t if the user has selected a mine or selected all the empty squares, nil otherwise.")
+
 (defun minesweeper-begin-game (&optional width height mines)
   "Prompt the user for the minefield size and number of mines, then initialize the game."
   (minesweeper-debug "beginning the game")
@@ -202,8 +205,9 @@
 				     *minesweeper-board-height*)
 				  *minesweeper-mines*)
 	*minesweeper-first-move* 't
-	*minesweeper-game-started* (current-time)
-	*minesweeper-mark-count* 0)
+	*minesweeper-game-epoch* (current-time)
+	*minesweeper-mark-count* 0
+	*minesweeper-game-over* nil)
   (minesweeper-debug "most global vars set -- checking for overpopulation of mines.")
   (while (< *minesweeper-blanks-left* *minesweeper-min-free-squares*)
     (setq *minesweeper-mines* (minesweeper-get-integer (format "Too many mines. You can have at most %d mines. Number of mines?" (- (* *minesweeper-board-width*
@@ -408,53 +412,58 @@
 (defun minesweeper-toggle-mark ()
   "Set the marked status of the current square to the opposite of what it currently is"
   (interactive)
-  (let ((col (current-column))
-  	(row (1- (line-number-at-pos))))
-    (minesweeper-invert-mark col row))
-  (minesweeper-refresh-field))
+  (unless *minesweeper-game-over*
+    (let ((col (current-column))
+	  (row (1- (line-number-at-pos))))
+      (minesweeper-invert-mark col row))
+    (minesweeper-refresh-field)))
 
 (defun minesweeper-toggle-mark-mouse (click)
   "Set the marked status of the clicked-on square to the opposite of what it currently is."
   (interactive "e")
-  (let ((window (elt (cadr click) 0))
-	(pos (elt (cadr click) 6)))
-    (minesweeper-invert-mark (car pos) (cdr pos))
-    (select-window window)
-    (minesweeper-refresh-field)))
+  (unless *minesweeper-game-over*
+    (let ((window (elt (cadr click) 0))
+	  (pos (elt (cadr click) 6)))
+      (minesweeper-invert-mark (car pos) (cdr pos))
+      (select-window window)
+      (minesweeper-refresh-field))))
 
 
 (defun minesweeper-choose ()
   "This is the function called when the user picks a mine."
   (interactive)
   (minesweeper-debug "starting choose")
-  (let ((col (current-column))
-	(row (1- (line-number-at-pos))))
-    (catch 'game-end (minesweeper-pick col row)
-	   (if (eq (minesweeper-view-mine col row) ?0)
-	       (minesweeper-refresh-field)
-	     (minesweeper-refresh-square col row))))
-  (minesweeper-debug "finishing choose"))
+  (unless *minesweeper-game-over*
+    (let ((col (current-column))
+	  (row (1- (line-number-at-pos))))
+      (catch 'game-end (minesweeper-pick col row)
+	     (if (eq (minesweeper-view-mine col row) ?0)
+		 (minesweeper-refresh-field)
+	       (minesweeper-refresh-square col row))))
+    (minesweeper-debug "finishing choose")))
 
 (defun minesweeper-choose-around ()
   "Pick all non-marked cells around point. It does not include the cell at point."
   (interactive)
   (minesweeper-debug "starting choose-around")
-  (let ((col (current-column))
-	(row (1- (line-number-at-pos))))
-    (catch 'game-end (minesweeper-pick-around col row)
-	   (minesweeper-refresh-field)))
-  (minesweeper-debug "finishing choose-around"))
+  (unless *minesweeper-game-over*
+    (let ((col (current-column))
+	  (row (1- (line-number-at-pos))))
+      (catch 'game-end (minesweeper-pick-around col row)
+	     (minesweeper-refresh-field)))
+    (minesweeper-debug "finishing choose-round")))
 
 (defun minesweeper-choose-around-mouse (click)
   "Choose all the non-marked cells around the one clicked on, not including the one clicked on."
   (interactive "e")
   (minesweeper-debug "beginning choose-around-mouse")
-  (let ((window (elt (cadr click) 0))
-	(pos (elt (cadr click) 6)))
-    (catch 'game-end (minesweeper-pick-around (car pos) (cdr pos))
-	   (select-window window)
-	   (minesweeper-refresh-field)))
-  (minesweeper-debug "ending choose-around-mouse"))
+  (unless *minesweeper-game-over*
+    (let ((window (elt (cadr click) 0))
+	  (pos (elt (cadr click) 6)))
+      (catch 'game-end (minesweeper-pick-around (car pos) (cdr pos))
+	     (select-window window)
+	     (minesweeper-refresh-field)))
+    (minesweeper-debug "ending choose-around-mouse")))
 
 (defun minesweeper-pick-around (x y)
   "Pick all the squares around (x, y). As a precondition, (x, y) should be zero."
@@ -468,7 +477,7 @@
 
 (defun minesweeper-lose-game (x y)
   "Print the lose-game message and prompt for a new one."
-  (let ((game-duration (time-subtract (current-time) *minesweeper-game-started*)))
+  (let ((game-duration (time-subtract (current-time) *minesweeper-game-epoch*)))
     (minesweeper-end-game (concat "You lose. This game took "
 				  (format-seconds "%H, %M, %S. " (+ (* (car game-duration)
 								       (expt 2 16))
@@ -485,7 +494,7 @@
 
 (defun minesweeper-win-game ()
   "Print the win-game message and prompt for a new one."
-  (let ((game-duration (time-subtract (current-time) *minesweeper-game-started*)))
+  (let ((game-duration (time-subtract (current-time) *minesweeper-game-epoch*)))
     (minesweeper-end-game (concat "Congrats! You've won in "
 				  (format-seconds "%H, %M, %S. " (+ (* (car game-duration)
 								       (expt 2 16))
@@ -498,6 +507,7 @@
 
 (defun minesweeper-end-game (message)
   "ends the game, prompting for a new game with message"
+  (setq *minesweeper-game-over* t)
   (minesweeper-print-field 't)
   (when (y-or-n-p message)
       (minesweeper-begin-game *minesweeper-board-width* *minesweeper-board-height* *minesweeper-mines*)))
