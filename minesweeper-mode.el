@@ -527,11 +527,14 @@
 
 (defun minesweeper-refresh-square (col row)
   "Refreshes the printed value of (col, row)"
+  (minesweeper-debug "starting refresh-square. (col, row) is (" (number-to-string col) ",\t" (number-to-string row) ")")
   (let ((val (minesweeper-view-mine col row)))
-    (goto-line row)
-    (move-to-column col)
-    (delete-char)
-    (minesweeper-insert-value (minesweeper-view-mine col row))))
+    (goto-line (1+ row))
+    (forward-char col)
+    (let ((inhibit-read-only t))
+      (delete-char 1)
+      (minesweeper-insert-value (minesweeper-view-mine col row)))
+    (forward-char -1)))
 
 (defun minesweeper-insert-value (val)
   "Outputs val, properly colored, at point."
