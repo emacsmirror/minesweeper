@@ -578,28 +578,30 @@
 
 (defun minesweeper-show-neighbors ()
   "If point is within the minefield, highlight as many of the eight squares around point that are in the minefield."
-  (let ((col (current-column))
-	(row (1- (line-number-at-pos)))
-	(point (point)))
-    (minesweeper-reset-neighbor-overlays)
-    (when (and (< col *minesweeper-board-width*)
-	       (< row *minesweeper-board-height*))
-      (when (> row 0);; "top" overlay
-	(let ((center (- point *minesweeper-board-width* 1)))
-	  (move-overlay *minesweeper-top-overlay*
-			(- center (min col 1))
-			(+ center 1 (if (>= col (1- *minesweeper-board-width*)) 0 1))
-			(get-buffer "minesweeper"))))
-      (when (> col 0);; "left" overlay
-	(move-overlay *minesweeper-left-overlay* (1- point) point (get-buffer "minesweeper")))
-      (when (< col (1- *minesweeper-board-width*)) ;; "right" overlay
-	(move-overlay *minesweeper-right-overlay* (1+ point) (+ point 2) (get-buffer "minesweeper")))
-      (when (< row (1- *minesweeper-board-height*)) ;; "bottom" overlay
-	(let ((center (+ point *minesweeper-board-width* 1)))
-	  (move-overlay *minesweeper-bottom-overlay*
-			(- center (if (eq col 0) 0 1))
-			(+ center 1 (if (>= col (1- *minesweeper-board-width*)) 0 1))
-			(get-buffer "minesweeper")))))))
+  (minesweeper-reset-neighbor-overlays)
+  (when (equal "minesweeper"
+	       (buffer-name (current-buffer)))
+    (let ((col (current-column))
+	  (row (1- (line-number-at-pos)))
+	  (point (point)))
+      (when (and (< col *minesweeper-board-width*)
+		 (< row *minesweeper-board-height*))
+	(when (> row 0);; "top" overlay
+	  (let ((center (- point *minesweeper-board-width* 1)))
+	    (move-overlay *minesweeper-top-overlay*
+			  (- center (min col 1))
+			  (+ center 1 (if (>= col (1- *minesweeper-board-width*)) 0 1))
+			  (get-buffer "minesweeper"))))
+	(when (> col 0);; "left" overlay
+	  (move-overlay *minesweeper-left-overlay* (1- point) point (get-buffer "minesweeper")))
+	(when (< col (1- *minesweeper-board-width*)) ;; "right" overlay
+	  (move-overlay *minesweeper-right-overlay* (1+ point) (+ point 2) (get-buffer "minesweeper")))
+	(when (< row (1- *minesweeper-board-height*)) ;; "bottom" overlay
+	  (let ((center (+ point *minesweeper-board-width* 1)))
+	    (move-overlay *minesweeper-bottom-overlay*
+			  (- center (if (eq col 0) 0 1))
+			  (+ center 1 (if (>= col (1- *minesweeper-board-width*)) 0 1))
+			  (get-buffer "minesweeper"))))))))
 
 (defun minesweeper-get-face (val)
   "Gets the face for the character value of val. Proper inputs are ?0 through ?8, ?- and ?*"
