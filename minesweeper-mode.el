@@ -415,18 +415,20 @@
   (unless *minesweeper-game-over*
     (let ((col (current-column))
 	  (row (1- (line-number-at-pos))))
-      (minesweeper-invert-mark col row))
-    (minesweeper-refresh-field)))
+      (minesweeper-invert-mark col row)
+      (minesweeper-refresh-square col row))))
 
 (defun minesweeper-toggle-mark-mouse (click)
   "Set the marked status of the clicked-on square to the opposite of what it currently is."
   (interactive "e")
   (unless *minesweeper-game-over*
-    (let ((window (elt (cadr click) 0))
-	  (pos (elt (cadr click) 6)))
-      (minesweeper-invert-mark (car pos) (cdr pos))
+    (let* ((window (elt (cadr click) 0))
+	   (pos (elt (cadr click) 6))
+	   (col (car pos))
+	   (row (cdr pos)))
+      (minesweeper-invert-mark col row)
       (select-window window)
-      (minesweeper-refresh-field))))
+      (minesweeper-refresh-square col row))))
 
 
 (defun minesweeper-choose ()
