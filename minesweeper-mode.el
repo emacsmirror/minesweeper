@@ -390,9 +390,8 @@
 	  (while to-reveal
 	    (let* ((cur (pop to-reveal))
 		   (cur-x (car cur))
-		   (cur-y (cadr cur))
-		   (val (minesweeper-view-mine cur-x cur-y 't)))
-	      (minesweeper-debug "View-mine says " (number-to-string cur-x) ", " (number-to-string cur-y) " mine = " (make-string 1 val))
+		   (cur-y (cadr cur)))
+	      (minesweeper-debug "View-mine says " (number-to-string cur-x) ", " (number-to-string cur-y) " mine = " (make-string 1 (minesweeper-view-mine cur-x cur-y 't)))
 	      (unless (or (minesweeper-is-revealed cur-x cur-y)
 			  (minesweeper-marked cur-x cur-y))
 		(minesweeper-debug "it's not revealed, so reveal it")
@@ -401,7 +400,8 @@
 			0)
 		    (progn (minesweeper-win-game)
 			   (throw 'game-end nil))
-		  (when (eq val ?0)
+		  (when (eq (minesweeper-view-mine cur-x cur-y 't)
+			    ?0)
 		    (minesweeper-debug "pushing neighbors onto the stack")
 		    (mapcar '(lambda (position)
 			       (push position
