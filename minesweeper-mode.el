@@ -198,9 +198,12 @@
   (setq *minesweeper-board-width* (or width *minesweeper-default-width*)
 	*minesweeper-board-height* (or height *minesweeper-default-height*)
 	*minesweeper-mines* (or mines *minesweeper-default-mines*)
-	*minesweeper-field* (make-hash-table :test 'equal)
-	*minesweeper-reveals* (make-hash-table :test 'equal)
-	*minesweeper-marks* (make-hash-table :test 'equal)
+	*minesweeper-field* (make-hash-table :test 'equal :size (* *minesweeper-board-width*
+								   *minesweeper-board-height*))
+	*minesweeper-reveals* (make-hash-table :test 'equal :size (* *minesweeper-board-width*
+								     *minesweeper-board-height*))
+	*minesweeper-marks* (make-hash-table :test 'equal :size (* *minesweeper-board-width*
+								   *minesweeper-board-height*))
 	*minesweeper-blanks-left* (- (* *minesweeper-board-width*
 					*minesweeper-board-height*)
 				     *minesweeper-mines*)
