@@ -310,8 +310,7 @@
 
 (defun minesweeper-invert-mark (x y)
   "If (x, y) is marked, unmark it. Otherwise, mark it."
-  (when (and (< x *minesweeper-board-width*)
-             (< y *minesweeper-board-height*)
+  (when (and (minesweeper-in-bounds x y)
 	     (not (minesweeper-is-revealed x y)))
     (if (minesweeper-marked x y)
 	(minesweeper-unmark x y)
@@ -343,12 +342,9 @@
   (let ((neighbors nil))
     (minesweeper-for newx (1- x) (1+ x)
 		     (minesweeper-for newy (1- y) (1+ y)
-				      (unless (or (and (eq newx x)
-						       (eq newy y))
-						  (< newx 0)
-						  (< newy 0)
-						  (>= newx *minesweeper-board-width*)
-						  (>= newy *minesweeper-board-height*))
+				      (when (and (minesweeper-in-bounds x y)
+						 (not (and (eq newx x)
+							   (eq newy y))))
 					(push (list newx newy)
 					      neighbors))))
     neighbors))
@@ -373,8 +369,7 @@
 (defun minesweeper-pick (x y)
   "Reveals the square at position (x, y). If the square is zero, "
   (minesweeper-debug "starting pick with args:" (number-to-string x) " " (number-to-string y))
-  (unless (or (>= x *minesweeper-board-width*)
-	      (>= y *minesweeper-board-height*)
+  (unless (or (minesweeper-in-bounds x y)
 	      (minesweeper-is-revealed x y)
 	      (minesweeper-marked x y))
     (minesweeper-debug "in pick, valid position chosen")
@@ -473,8 +468,7 @@
 (defun minesweeper-pick-around (x y)
   "Pick all the squares around (x, y). As a precondition, (x, y) should be zero."
   (minesweeper-debug "called pick-around " (number-to-string x) " " (number-to-string y))
-  (when (and (< x *minesweeper-board-width*)
-	     (< y *minesweeper-board-height*))
+  (when (minesweeper-in-bounds x y)
     (mapcar '(lambda (position)
 	       (minesweeper-debug "called pick-around-helper " (number-to-string x) " " (number-to-string y))
 	       (minesweeper-pick (car position) (cadr position)))
@@ -589,8 +583,7 @@
     (let ((col (current-column))
 	  (row (1- (line-number-at-pos)))
 	  (point (point)))
-      (when (and (< col *minesweeper-board-width*)
-		 (< row *minesweeper-board-height*))
+      (when (minesweeper-in-bounds col row)
 	(when (> row 0);; "top" overlay
 	  (let ((center (- point *minesweeper-board-width* 1)))
 	    (move-overlay *minesweeper-top-overlay*
@@ -629,3 +622,7 @@
   (move-overlay *minesweeper-left-overlay* 0 0 (get-buffer "minesweeper"))
   (move-overlay *minesweeper-right-overlay* 0 0 (get-buffer "minesweeper"))
   (move-overlay *minesweeper-bottom-overlay* 0 0 (get-buffer "minesweeper")))
+
+(defun minesweeper-in-bounds (x y)
+  (and (< -1 x *minesweeper-board-width*)
+       (< -1 y *minesweeper-board-height*)))
