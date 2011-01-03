@@ -369,7 +369,7 @@
 (defun minesweeper-pick (x y)
   "Reveals the square at position (x, y). If the square is zero, "
   (minesweeper-debug "starting pick with args:" (number-to-string x) " " (number-to-string y))
-  (unless (or (minesweeper-in-bounds x y)
+  (unless (or (not (minesweeper-in-bounds x y))
 	      (minesweeper-is-revealed x y)
 	      (minesweeper-marked x y))
     (minesweeper-debug "in pick, valid position chosen")
@@ -624,5 +624,13 @@
   (move-overlay *minesweeper-bottom-overlay* 0 0 (get-buffer "minesweeper")))
 
 (defun minesweeper-in-bounds (x y)
-  (and (< -1 x *minesweeper-board-width*)
-       (< -1 y *minesweeper-board-height*)))
+  (minesweeper-debug "Called in-bounds with arguments " (number-to-string x) "\t" (number-to-string y) "\treturning " (if (and (< -1 x)
+       (< x *minesweeper-board-width*)
+       (< -1 y)
+       (< y *minesweeper-board-height*)) "t" "nil"))
+  (and (< -1 x)
+       (< x *minesweeper-board-width*)
+       (< -1 y)
+       (< y *minesweeper-board-height*)))
+
+
