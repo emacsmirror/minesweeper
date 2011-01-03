@@ -331,7 +331,7 @@
   "Increments the value at square (x, y), unless the square is a bomb"
   (let ((val (minesweeper-view-mine x y 't)))
     (when (and (<= ?0 val)
-	       (< val ?9))
+	       (<= val ?9))
       (minesweeper-set-mine x
 			    y
 			    (+ val
@@ -342,7 +342,7 @@
   (let ((neighbors nil))
     (minesweeper-for newx (1- x) (1+ x)
 		     (minesweeper-for newy (1- y) (1+ y)
-				      (when (and (minesweeper-in-bounds x y)
+				      (when (and (minesweeper-in-bounds newx newy)
 						 (not (and (eq newx x)
 							   (eq newy y))))
 					(push (list newx newy)
@@ -365,6 +365,33 @@
 	      (number-to-string *minesweeper-mines*)
 	      " marked.")))
   (minesweeper-debug "Field is printed out"))
+
+(defun minesweeper-refresh-field ()
+  "Prints out the new minefield, putting point back where it was when this function was called."
+  (let ((col (current-column))
+	(row (1- (line-number-at-pos))))
+    (minesweeper-print-field)
+    (goto-char (point-min))
+    (forward-char col)
+    (next-line row)))
+
+(defun minesweeper-refresh-square (col row)
+  "Refreshes the printed value of (col, row)"
+  (minesweeper-debug "starting refresh-square. (col, row) is (" (number-to-string col) ",\t" (number-to-string row) ")")
+  (let ((val (minesweeper-view-mine col row)))
+    (goto-line (1+ row))
+    (forward-char col)
+    (let ((inhibit-read-only t))
+      (delete-char 1)
+      (minesweeper-insert-value (minesweeper-view-mine col row)))
+    (forward-char -1)))
+
+(defun minesweeper-insert-value (val)
+  "Outputs val, properly colored, at point."
+  (let ((overlay (make-overlay 0 0)))
+    (overlay-put overlay 'face (minesweeper-get-face val))
+    (insert-char val 1)
+    (move-overlay overlay (1- (point)) (point))))
 
 (defun minesweeper-pick (x y)
   "Reveals the square at position (x, y). If the square is zero, "
@@ -524,34 +551,6 @@
   `(when *minesweeper-debug*
      (print (concat ,@body)
 	    (get-buffer-create "debug"))))
-
-(defun minesweeper-refresh-field ()
-  "Prints out the new minefield, putting point back where it was when this function was called."
-  (let ((col (current-column))
-	(row (1- (line-number-at-pos))))
-    (minesweeper-print-field)
-    (goto-char (point-min))
-    (forward-char col)
-    (next-line row)))
-
-(defun minesweeper-refresh-square (col row)
-  "Refreshes the printed value of (col, row)"
-  (minesweeper-debug "starting refresh-square. (col, row) is (" (number-to-string col) ",\t" (number-to-string row) ")")
-  (let ((val (minesweeper-view-mine col row)))
-    (goto-line (1+ row))
-    (forward-char col)
-    (let ((inhibit-read-only t))
-      (delete-char 1)
-      (minesweeper-insert-value (minesweeper-view-mine col row)))
-    (forward-char -1)))
-
-(defun minesweeper-insert-value (val)
-  "Outputs val, properly colored, at point."
-  (let ((overlay (make-overlay 0 0)))
-    (overlay-put overlay 'face (minesweeper-get-face val))
-    (insert-char val 1)
-    (move-overlay overlay (1- (point)) (point))))
-
 
 (defun minesweeper-get-integer (&optional message default)
   "Reads one nonzero integer from the minibuffer."
