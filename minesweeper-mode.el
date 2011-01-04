@@ -331,7 +331,7 @@
   "Increments the value at square (x, y), unless the square is a bomb"
   (let ((val (minesweeper-view-mine x y 't)))
     (when (and (<= ?0 val)
-	       (<= val ?9))
+	       (<= val ?8))
       (minesweeper-set-mine x
 			    y
 			    (+ val
