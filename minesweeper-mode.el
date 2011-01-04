@@ -388,10 +388,11 @@
 
 (defun minesweeper-insert-value (val)
   "Outputs val, properly colored, at point."
-  (let ((overlay (make-overlay 0 0)))
-    (overlay-put overlay 'face (minesweeper-get-face val))
-    (insert-char val 1)
-    (move-overlay overlay (1- (point)) (point))))
+  (insert-char val 1)
+  (add-text-properties (point)
+		       (1- (point))
+		       (list 'face
+			     (minesweeper-get-face val))))
 
 (defun minesweeper-pick (x y)
   "Reveals the square at position (x, y). If the square is zero, "
