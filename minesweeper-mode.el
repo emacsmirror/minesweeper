@@ -72,19 +72,19 @@
 (defface minesweeper-neighbor
   '((t (:background "#C0FFFF"))) "face for the neighbors of point")
 
-(defvar *minesweeper-board-width* 0
+(defvar *minesweeper-board-width* nil
   "The number of columns on the Minesweeper field.")
 
 (defvar *minesweeper-default-width* 10
   "The default board width")
 
-(defvar *minesweeper-board-height* 0
+(defvar *minesweeper-board-height* nil
   "The number of rows on the Minesweeper field.")
 
 (defvar *minesweeper-default-height* 10
   "The default board height.")
 
-(defvar *minesweeper-mines* 0
+(defvar *minesweeper-mines* nil
   "The number of mines on the Minesweeper field.")
 
 (defvar *minesweeper-default-mines* 10
@@ -176,18 +176,18 @@
 (defun minesweeper-begin-game (&optional width height mines)
   "Prompt the user for the minefield size and number of mines, then initialize the game."
   (minesweeper-debug "beginning the game")
-  (if (y-or-n-p (concat (number-to-string (or width *minesweeper-default-width*))
+  (if (y-or-n-p (concat (number-to-string (or width *minesweeper-board-width* *minesweeper-default-width*))
 			" by "
-			(number-to-string (or height *minesweeper-default-height*))
+			(number-to-string (or height *minesweeper-board-height* *minesweeper-default-height*))
 			" with "
-			(number-to-string (or mines *minesweeper-default-mines*))
+			(number-to-string (or mines *minesweeper-mines* *minesweeper-default-mines*))
 			" mines ok? "))
-      (minesweeper-init (or width *minesweeper-default-width*)
-			(or height *minesweeper-default-height*)
-			(or mines *minesweeper-default-mines*))
-    (let ((width (minesweeper-get-integer "Minefield width? " (number-to-string (or width *minesweeper-default-width*))))
-	  (height (minesweeper-get-integer "Minefield height? " (number-to-string (or height *minesweeper-default-height*))))
-	  (mines (minesweeper-get-integer "Number of mines? " (number-to-string (or mines *minesweeper-default-mines*)))))
+      (minesweeper-init (or width *minesweeper-board-width* *minesweeper-default-width*)
+			(or height *minesweeper-board-height* *minesweeper-default-height*)
+			(or mines *minesweeper-mines* *minesweeper-default-mines*))
+    (let ((width (minesweeper-get-integer "Minefield width? " (number-to-string (or width *minesweeper-board-width* *minesweeper-default-width*))))
+	  (height (minesweeper-get-integer "Minefield height? " (number-to-string (or height *minesweeper-board-height* *minesweeper-default-height*))))
+	  (mines (minesweeper-get-integer "Number of mines? " (number-to-string (or mines *minesweeper-mines* *minesweeper-default-mines*)))))
       (minesweeper-init width height mines)))
   (minesweeper-print-field)
   (message "Good luck!"))
