@@ -442,7 +442,7 @@
     (let ((col (current-column))
 	  (row (1- (line-number-at-pos))))
       (minesweeper-invert-mark col row)
-      (minesweeper-refresh-square col row))))
+      (minesweeper-refresh-field))))
 
 (defun minesweeper-toggle-mark-mouse (click)
   "Set the marked status of the clicked-on square to the opposite of what it currently is."
@@ -454,7 +454,7 @@
 	   (row (cdr pos)))
       (minesweeper-invert-mark col row)
       (select-window window)
-      (minesweeper-refresh-square col row))))
+      (minesweeper-refresh-field))))
 
 
 (defun minesweeper-choose ()
