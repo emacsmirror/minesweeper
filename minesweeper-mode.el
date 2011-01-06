@@ -504,33 +504,27 @@
 
 (defun minesweeper-lose-game (x y)
   "Print the lose-game message and prompt for a new one."
-  (let ((game-duration (time-subtract (current-time) *minesweeper-game-epoch*)))
-    (minesweeper-end-game (concat "You lose. This game took "
-				  (format-seconds "%H, %M, %S. " (+ (* (car game-duration)
-								       (expt 2 16))
-								    (cadr game-duration)))
-				  "You chose spot ("
-				  (number-to-string x)
-				  ", "
-				  (number-to-string y)
-				  ") which was a bomb. You've won "
-				  (number-to-string *minesweeper-wins*)
-				  " and lost "
-				  (number-to-string (setq *minesweeper-losses* (1+ *minesweeper-losses*)))
-				  ". Another game? "))))
+  (minesweeper-end-game (concat "You lose. This game took "
+				(minesweeper-game-duration-string)
+				"You chose spot ("
+				(number-to-string x)
+				", "
+				(number-to-string y)
+				") which was a bomb. You've won "
+				(number-to-string *minesweeper-wins*)
+				" and lost "
+				(number-to-string (setq *minesweeper-losses* (1+ *minesweeper-losses*)))
+				". Another game? ")))
 
 (defun minesweeper-win-game ()
   "Print the win-game message and prompt for a new one."
-  (let ((game-duration (time-subtract (current-time) *minesweeper-game-epoch*)))
-    (minesweeper-end-game (concat "Congrats! You've won in "
-				  (format-seconds "%H, %M, %S. " (+ (* (car game-duration)
-								       (expt 2 16))
-								    (cadr game-duration)))
-				  "You've won "
-				  (number-to-string (setq *minesweeper-wins* (1+ *minesweeper-wins*)))
-				  " and lost "
-				  (number-to-string *minesweeper-losses*)
-				  ". Another game? "))))
+  (minesweeper-end-game (concat "Congrats! You've won in "
+				(minesweeper-game-duration-string)
+				"You've won "
+				(number-to-string (setq *minesweeper-wins* (1+ *minesweeper-wins*)))
+				" and lost "
+				(number-to-string *minesweeper-losses*)
+				". Another game? ")))
 
 (defun minesweeper-end-game (message)
   "ends the game, prompting for a new game with message"
@@ -538,6 +532,13 @@
   (minesweeper-print-field 't)
   (when (y-or-n-p message)
     (minesweeper-begin-game *minesweeper-board-width* *minesweeper-board-height* *minesweeper-mines*)))
+
+(defun minesweeper-game-duration-string ()
+  "Returns the duration the current game has taken as a string."
+  (let ((game-duration (time-subtract (current-time) *minesweeper-game-epoch*)))
+    (format-seconds "%H, %M, %S. " (+ (* (car game-duration)
+					 (expt 2 16))
+				      (cadr game-duration)))))
 
 (defmacro minesweeper-for (var init end &rest body)
   "Helper function. executes 'body repeatedly, with 'var assigned values starting at 'init, and ending at 'end, increasing by one each iteration."
