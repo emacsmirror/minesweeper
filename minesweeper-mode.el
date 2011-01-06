@@ -504,27 +504,24 @@
 
 (defun minesweeper-lose-game (x y)
   "Print the lose-game message and prompt for a new one."
+  (setq *minesweeper-losses* (1+ *minesweeper-losses*))
   (minesweeper-end-game (concat "You lose. This game took "
-				(minesweeper-game-duration-string)
+				(minesweeper-game-duration-message)
 				"You chose spot ("
 				(number-to-string x)
 				", "
 				(number-to-string y)
-				") which was a bomb. You've won "
-				(number-to-string *minesweeper-wins*)
-				" and lost "
-				(number-to-string (setq *minesweeper-losses* (1+ *minesweeper-losses*)))
-				". Another game? ")))
+				") which was a bomb. "
+				(minesweeper-record-message)
+				"Another game? ")))
 
 (defun minesweeper-win-game ()
   "Print the win-game message and prompt for a new one."
+  (setq *minesweeper-wins* (1+ *minesweeper-wins*))
   (minesweeper-end-game (concat "Congrats! You've won in "
-				(minesweeper-game-duration-string)
-				"You've won "
-				(number-to-string (setq *minesweeper-wins* (1+ *minesweeper-wins*)))
-				" and lost "
-				(number-to-string *minesweeper-losses*)
-				". Another game? ")))
+				(minesweeper-game-duration-message)
+				(minesweeper-record-message)
+				"Another game? ")))
 
 (defun minesweeper-end-game (message)
   "ends the game, prompting for a new game with message"
@@ -533,12 +530,20 @@
   (when (y-or-n-p message)
     (minesweeper-begin-game *minesweeper-board-width* *minesweeper-board-height* *minesweeper-mines*)))
 
-(defun minesweeper-game-duration-string ()
-  "Returns the duration the current game has taken as a string."
+(defun minesweeper-game-duration-message ()
+  "Returns the duration the current game has taken as a human-readable string."
   (let ((game-duration (time-subtract (current-time) *minesweeper-game-epoch*)))
     (format-seconds "%H, %M, %S. " (+ (* (car game-duration)
 					 (expt 2 16))
 				      (cadr game-duration)))))
+
+(defun minesweeper-record-message ()
+  "Returns the number of wins and losses formatted as a human-readable string."
+  (concat "You've won "
+	  (number-to-string *minesweeper-wins*)
+	  " games and lost "
+	  (number-to-string *minesweeper-losses*)
+	  ". "))
 
 (defmacro minesweeper-for (var init end &rest body)
   "Helper function. executes 'body repeatedly, with 'var assigned values starting at 'init, and ending at 'end, increasing by one each iteration."
