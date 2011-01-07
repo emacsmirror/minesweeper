@@ -340,11 +340,14 @@
 (defun minesweeper-neighbors (x y)
   "Returns a list of the neighbors of (x, y)."
   (let ((neighbors nil))
-    (minesweeper-for newx (1- x) (1+ x)
-		     (minesweeper-for newy (1- y) (1+ y)
-				      (when (and (minesweeper-in-bounds newx newy)
-						 (not (and (eq newx x)
-							   (eq newy y))))
+    (minesweeper-for newx
+		     (max (1- x) 0)
+		     (min (1+ x) *minesweeper-board-width*)
+		     (minesweeper-for newy
+				      (max (1- y) 0)
+				      (min (1+ y) *minesweeper-board-height*)
+				      (when (not (and (eq newx x)
+						      (eq newy y)))
 					(push (cons newx newy)
 					      neighbors))))
     neighbors))
