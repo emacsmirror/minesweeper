@@ -324,7 +324,7 @@
 (defun minesweeper-inform-around (x y &optional amount)
   "takes in a square, and increases the values of all its empty neighbors by 'amount"
   (mapcar (lambda (position)
-	    (minesweeper-++ (car position) (cadr position) (or amount 1)))
+	    (minesweeper-++ (car position) (cdr position) (or amount 1)))
 	  (minesweeper-neighbors x y)))
 
 (defun minesweeper-++ (x y &optional amount)
@@ -345,7 +345,7 @@
 				      (when (and (minesweeper-in-bounds newx newy)
 						 (not (and (eq newx x)
 							   (eq newy y))))
-					(push (list newx newy)
+					(push (cons newx newy)
 					      neighbors))))
     neighbors))
 
@@ -411,12 +411,12 @@
       (if (eq val ?X)
 	  (progn (minesweeper-lose-game x y)
 		 (throw 'game-end nil))
-	(let ((to-reveal (list (list x y))))
+	(let ((to-reveal (list (cons x y))))
 	  (minesweeper-debug "The user didn't pick an X")
 	  (while to-reveal
 	    (let* ((cur (pop to-reveal))
 		   (cur-x (car cur))
-		   (cur-y (cadr cur)))
+		   (cur-y (cdr cur)))
 	      (minesweeper-debug "View-mine says " (number-to-string cur-x) ", " (number-to-string cur-y) " mine = " (make-string 1 (minesweeper-view-mine cur-x cur-y 't)))
 	      (unless (or (minesweeper-is-revealed cur-x cur-y)
 			  (minesweeper-marked cur-x cur-y))
@@ -499,7 +499,7 @@
   (when (minesweeper-in-bounds x y)
     (mapcar '(lambda (position)
 	       (minesweeper-debug "called pick-around-helper " (number-to-string x) " " (number-to-string y))
-	       (minesweeper-pick (car position) (cadr position)))
+	       (minesweeper-pick (car position) (cdr position)))
 	    (minesweeper-neighbors x y))))
 
 (defun minesweeper-lose-game (x y)
