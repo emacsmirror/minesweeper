@@ -342,10 +342,10 @@
   (let ((neighbors nil))
     (minesweeper-for newx
 		     (max (1- x) 0)
-		     (min (1+ x) *minesweeper-board-width*)
+		     (min (1+ x) (1- *minesweeper-board-width*))
 		     (minesweeper-for newy
 				      (max (1- y) 0)
-				      (min (1+ y) *minesweeper-board-height*)
+				      (min (1+ y) (1- *minesweeper-board-height*))
 				      (when (not (and (eq newx x)
 						      (eq newy y)))
 					(push (cons newx newy)
