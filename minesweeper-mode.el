@@ -323,9 +323,9 @@
 
 (defun minesweeper-inform-around (x y &optional amount)
   "takes in a square, and increases the values of all its empty neighbors by 'amount"
-  (mapcar (lambda (position)
-	    (minesweeper-++ (car position) (cdr position) (or amount 1)))
-	  (minesweeper-neighbors x y)))
+  (mapc (lambda (position)
+	  (minesweeper-++ (car position) (cdr position) (or amount 1)))
+	(minesweeper-neighbors x y)))
 
 (defun minesweeper-++ (x y &optional amount)
   "Increments the value at square (x, y), unless the square is a bomb"
@@ -432,10 +432,10 @@
 		  (when (eq (minesweeper-view-mine cur-x cur-y 't)
 			    ?0)
 		    (minesweeper-debug "pushing neighbors onto the stack")
-		    (mapcar '(lambda (position)
-			       (push position
-				     to-reveal))
-			    (minesweeper-neighbors cur-x cur-y))))))))))))
+		    (mapc '(lambda (position)
+			     (push position
+				   to-reveal))
+			  (minesweeper-neighbors cur-x cur-y))))))))))))
 
 
 (defun minesweeper-toggle-mark ()
@@ -500,10 +500,10 @@
   "Pick all the squares around (x, y). As a precondition, (x, y) should be zero."
   (minesweeper-debug "called pick-around " (number-to-string x) " " (number-to-string y))
   (when (minesweeper-in-bounds x y)
-    (mapcar '(lambda (position)
-	       (minesweeper-debug "called pick-around-helper " (number-to-string x) " " (number-to-string y))
-	       (minesweeper-pick (car position) (cdr position)))
-	    (minesweeper-neighbors x y))))
+    (mapc '(lambda (position)
+	     (minesweeper-debug "called pick-around-helper " (number-to-string x) " " (number-to-string y))
+	     (minesweeper-pick (car position) (cdr position)))
+	  (minesweeper-neighbors x y))))
 
 (defun minesweeper-lose-game (x y)
   "Print the lose-game message and prompt for a new one."
