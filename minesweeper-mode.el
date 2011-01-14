@@ -192,6 +192,7 @@ Your goal is to reveal all the empty squares.
 	  (mines (minesweeper-get-integer "Number of mines? " (number-to-string (or mines *minesweeper-mines* *minesweeper-default-mines*)))))
       (minesweeper-init width height mines)))
   (minesweeper-print-field)
+  (goto-char (point-min))
   (message "Good luck!"))
 
 (defun minesweeper-init (&optional width height mines)
