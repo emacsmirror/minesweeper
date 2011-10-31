@@ -102,7 +102,7 @@ Your goal is to reveal all the empty squares.
   "Holds 't in (x, y) iff (x, y) has been marked. A marked square cannot be chosen.")
 
 (defvar *minesweeper-blanks-left* 0
-  "Holds the number of mines left. After 'minesweeper-init has been called, the user will win the game when this becomes zero again.")
+  "Holds the number of empty squares left. After 'minesweeper-init has been called, the user will win the game when this becomes zero again.")
 
 (defvar *minesweeper-debug* nil
   "when 't, print debugging information.")
