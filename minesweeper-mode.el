@@ -1,3 +1,31 @@
+;;; minesweeper-mode.el --- play minesweeper in Emacs
+
+;; Copyright 2010-2012 Zachary Kanfer
+
+;; Author: Zachary Kanfer <zkanfer@gmail.com>
+;; Version: 2012.01.29
+;; URL: https://bitbucket.org/zck/minesweeper.el
+
+;; This file is not part of GNU Emacs
+
+;; This program is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+;; Keywords: game fun minesweeper inane diversion
+
+;;; Code:
+
 (defvar minesweeper-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "SPC") 'minesweeper-choose)
@@ -649,3 +677,4 @@ Your goal is to reveal all the empty squares.
        (< y *minesweeper-board-height*)))
 
 
+;;; minesweeper-mode.el ends here
