@@ -578,7 +578,11 @@ Your goal is to reveal all the empty squares.
   "Returns the number of wins and losses formatted as a human-readable string."
   (concat "You've won "
 	  (number-to-string *minesweeper-wins*)
-	  " games and lost "
+	  " game"
+          (unless (= *minesweeper-wins*
+                     1)
+            "s")
+          " and lost "
 	  (number-to-string *minesweeper-losses*)
 	  ". "))
 
