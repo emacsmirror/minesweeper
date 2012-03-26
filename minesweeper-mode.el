@@ -45,9 +45,9 @@
     (define-key map (kbd "s") 'minesweeper-toggle-show-neighbors)
     map))
 
-(defun minesweeper () "Major mode for playing Minesweeper in Emacs. There's a field of squares; each square may hold a mine. If a square doesn't have a mine, you'll see how many mines are in the eight neighboring squares. You may mark squares, which protects them from accidentally being selected.
+(defun minesweeper () "Major mode for playing Minesweeper in Emacs.
 
-Your goal is to reveal all the empty squares.
+There's a field of squares; each square may hold a mine. Your goal is to uncover all the squares that don't have mines. If a revealed square doesn't have a mine, you'll see how many mines are in the eight neighboring squares. You may mark squares, which protects them from accidentally being revealed.
 
 \\{minesweeper-mode-map}"
   (interactive)
@@ -64,7 +64,9 @@ Your goal is to reveal all the empty squares.
 						      'minesweeper-show-neighbors))
   (minesweeper-begin-game))
 
-(defun minesweeper-mode () "Major mode for playing Minesweeper. To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
+(defun minesweeper-mode () "Major mode for playing Minesweeper.
+
+To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 
 (defface minesweeper-blank
   '((t (:foreground "black"))) "face for blank spaces")
