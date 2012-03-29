@@ -26,6 +26,8 @@
 
 ;;; Code:
 
+(require 'cl)
+
 (defvar minesweeper-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "SPC") 'minesweeper-choose)
@@ -292,6 +294,11 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 	(minesweeper-set-mine (car ele) (cadr ele) ?X)
 	(minesweeper-inform-around (car ele) (cadr ele))))))
 
+(defun minesweeper-position ()
+    "Return the current position of point as a minesweeper position construct. This construct is a list where the first element is the row value, and the second is the col value. This will return values outside of the minefield."
+    (list (1- (line-number-at-pos))
+          (current-column)))
+
 (defun minesweeper-view-mine (x y &optional reveal)
   "If reveal is true, or if the selected mine has been revealed, returns the value at position (x, y), where the origin is the upper left corner of the minefield. Otherwise, it returns * if the square is marked, - if it is not"
   (minesweeper-debug "called view-mine " (number-to-string x) " " (number-to-string y) " " (if reveal "reveal!" "hide"))
@@ -407,8 +414,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 
 (defun minesweeper-refresh-field ()
   "Prints out the new minefield, putting point back where it was when this function was called."
-  (let ((col (current-column))
-	(row (1- (line-number-at-pos))))
+  (multiple-value-bind (row col) (minesweeper-position)
     (minesweeper-print-field)
     (goto-char (point-min))
     (forward-char col)
@@ -478,8 +484,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
   "Set the marked status of the current square to the opposite of what it currently is"
   (interactive)
   (unless *minesweeper-game-over*
-    (let ((col (current-column))
-	  (row (1- (line-number-at-pos))))
+    (multiple-value-bind (row col) (minesweeper-position)
       (minesweeper-invert-mark col row)
       (minesweeper-refresh-field))))
 
@@ -501,8 +506,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
   (interactive)
   (minesweeper-debug "starting choose")
   (unless *minesweeper-game-over*
-    (let ((col (current-column))
-	  (row (1- (line-number-at-pos))))
+  (multiple-value-bind (row col) (minesweeper-position)
       (catch 'game-end (minesweeper-pick col row)
 	     (if (eq (minesweeper-view-mine col row) ?0)
 		 (minesweeper-refresh-field)
@@ -514,8 +518,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
   (interactive)
   (minesweeper-debug "starting choose-around")
   (unless *minesweeper-game-over*
-    (let ((col (current-column))
-	  (row (1- (line-number-at-pos))))
+  (multiple-value-bind (row col) (minesweeper-position)
       (catch 'game-end (minesweeper-pick-around col row)
 	     (minesweeper-refresh-field)))
     (minesweeper-debug "finishing choose-round")))
@@ -629,26 +632,25 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
   (minesweeper-reset-neighbor-overlays)
   (when (equal "minesweeper"
 	       (buffer-name (current-buffer)))
-    (let ((col (current-column))
-	  (row (1- (line-number-at-pos)))
-	  (point (point)))
-      (when (minesweeper-in-bounds col row)
-	(when (> row 0);; "top" overlay
-	  (let ((center (- point *minesweeper-board-width* 1)))
-	    (move-overlay *minesweeper-top-overlay*
-			  (- center (min col 1))
-			  (+ center 1 (if (>= col (1- *minesweeper-board-width*)) 0 1))
-			  (get-buffer "minesweeper"))))
-	(when (> col 0);; "left" overlay
-	  (move-overlay *minesweeper-left-overlay* (1- point) point (get-buffer "minesweeper")))
-	(when (< col (1- *minesweeper-board-width*)) ;; "right" overlay
-	  (move-overlay *minesweeper-right-overlay* (1+ point) (+ point 2) (get-buffer "minesweeper")))
-	(when (< row (1- *minesweeper-board-height*)) ;; "bottom" overlay
-	  (let ((center (+ point *minesweeper-board-width* 1)))
-	    (move-overlay *minesweeper-bottom-overlay*
-			  (- center (if (eq col 0) 0 1))
-			  (+ center 1 (if (>= col (1- *minesweeper-board-width*)) 0 1))
-			  (get-buffer "minesweeper"))))))))
+    (multiple-value-bind (row col) (minesweeper-position)
+      (let ((point (point)))
+        (when (minesweeper-in-bounds col row)
+          (when (> row 0) ;; "top" overlay
+            (let ((center (- point *minesweeper-board-width* 1)))
+              (move-overlay *minesweeper-top-overlay*
+                            (- center (min col 1))
+                            (+ center 1 (if (>= col (1- *minesweeper-board-width*)) 0 1))
+                            (get-buffer "minesweeper"))))
+          (when (> col 0) ;; "left" overlay
+            (move-overlay *minesweeper-left-overlay* (1- point) point (get-buffer "minesweeper")))
+          (when (< col (1- *minesweeper-board-width*)) ;; "right" overlay
+            (move-overlay *minesweeper-right-overlay* (1+ point) (+ point 2) (get-buffer "minesweeper")))
+          (when (< row (1- *minesweeper-board-height*)) ;; "bottom" overlay
+            (let ((center (+ point *minesweeper-board-width* 1)))
+              (move-overlay *minesweeper-bottom-overlay*
+                            (- center (if (eq col 0) 0 1))
+                            (+ center 1 (if (>= col (1- *minesweeper-board-width*)) 0 1))
+                            (get-buffer "minesweeper")))))))))
 
 (defun minesweeper-get-face (val)
   "Gets the face for the character value of val. Proper inputs are ?0 through ?8, ?- and ?*"
