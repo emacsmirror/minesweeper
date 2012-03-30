@@ -295,9 +295,10 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 	(minesweeper-inform-around (car ele) (cadr ele))))))
 
 (defun minesweeper-position ()
-    "Return the current position of point as a minesweeper position construct. This construct is a list where the first element is the row value, and the second is the col value. This will return values outside of the minefield."
-    (list (1- (line-number-at-pos))
-          (current-column)))
+    "Return the current position of point as a minesweeper position construct. This construct is a list where the first element is the row value, the second is the col value, and the third is whether the position is in bounds."
+    (let ((row (1- (line-number-at-pos)))
+          (col (current-column)))
+      (list row col (minesweeper-in-bounds col row))))
 
 (defun minesweeper-view-mine (x y &optional reveal)
   "If reveal is true, or if the selected mine has been revealed, returns the value at position (x, y), where the origin is the upper left corner of the minefield. Otherwise, it returns * if the square is marked, - if it is not"
@@ -423,13 +424,14 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 (defun minesweeper-refresh-square (col row)
   "Refreshes the printed value of (col, row)"
   (minesweeper-debug "starting refresh-square. (col, row) is (" (number-to-string col) ",\t" (number-to-string row) ")")
-  (let ((val (minesweeper-view-mine col row)))
-    (goto-line (1+ row))
-    (forward-char col)
-    (let ((inhibit-read-only t))
-      (delete-char 1)
-      (minesweeper-insert-value (minesweeper-view-mine col row)))
-    (forward-char -1)))
+  (when (minesweeper-in-bounds col row)
+    (let ((val (minesweeper-view-mine col row)))
+      (goto-line (1+ row))
+      (forward-char col)
+      (let ((inhibit-read-only t))
+        (delete-char 1)
+        (minesweeper-insert-value (minesweeper-view-mine col row)))
+      (forward-char -1))))
 
 (defun minesweeper-insert-value (val)
   "Outputs val, properly colored, at point."
@@ -484,9 +486,10 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
   "Set the marked status of the current square to the opposite of what it currently is"
   (interactive)
   (unless *minesweeper-game-over*
-    (multiple-value-bind (row col) (minesweeper-position)
-      (minesweeper-invert-mark col row)
-      (minesweeper-refresh-field))))
+    (multiple-value-bind (row col in-bounds) (minesweeper-position)
+      (when in-bounds
+        (minesweeper-invert-mark col row)
+        (minesweeper-refresh-field)))))
 
 (defun minesweeper-toggle-mark-mouse (click)
   "Set the marked status of the clicked-on square to the opposite of what it currently is."
@@ -496,9 +499,10 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 	   (pos (elt (cadr click) 6))
 	   (col (car pos))
 	   (row (cdr pos)))
-      (minesweeper-invert-mark col row)
-      (select-window window)
-      (minesweeper-refresh-field))))
+      (when (minesweeper-in-bounds col row)
+        (minesweeper-invert-mark col row)
+        (select-window window)
+        (minesweeper-refresh-field)))))
 
 
 (defun minesweeper-choose ()
@@ -506,22 +510,24 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
   (interactive)
   (minesweeper-debug "starting choose")
   (unless *minesweeper-game-over*
-  (multiple-value-bind (row col) (minesweeper-position)
-      (catch 'game-end (minesweeper-pick col row)
-	     (if (eq (minesweeper-view-mine col row) ?0)
-		 (minesweeper-refresh-field)
-	       (minesweeper-refresh-square col row))))
-    (minesweeper-debug "finishing choose")))
+    (multiple-value-bind (row col in-bounds) (minesweeper-position)
+      (when in-bounds
+        (catch 'game-end (minesweeper-pick col row)
+               (if (eq (minesweeper-view-mine col row) ?0)
+                   (minesweeper-refresh-field)
+                 (minesweeper-refresh-square col row))))
+      (minesweeper-debug "finishing choose"))))
 
 (defun minesweeper-choose-around ()
   "Pick all non-marked cells around point. It does not include the cell at point."
   (interactive)
   (minesweeper-debug "starting choose-around")
   (unless *minesweeper-game-over*
-  (multiple-value-bind (row col) (minesweeper-position)
-      (catch 'game-end (minesweeper-pick-around col row)
-	     (minesweeper-refresh-field)))
-    (minesweeper-debug "finishing choose-round")))
+    (multiple-value-bind (row col in-bounds) (minesweeper-position)
+      (when in-bounds
+        (catch 'game-end (minesweeper-pick-around col row)
+               (minesweeper-refresh-field)))
+      (minesweeper-debug "finishing choose-round"))))
 
 (defun minesweeper-choose-around-mouse (click)
   "Choose all the non-marked cells around the one clicked on, not including the one clicked on."
