@@ -260,7 +260,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 				       *minesweeper-mines*))))
 
 
-(defun minesweeper-fill-field (protect-col protect-row)
+(defun minesweeper-fill-field (protect-row protect-col)
   "Fills '*minesweeper-field* with '*minesweeper-mines* mines, and builds the neighbor count. It will not place any mines in the square (protect-col, protect-row)."
   (minesweeper-debug "filling the field")
   (minesweeper-for col 0 (1- *minesweeper-board-width*)
@@ -450,7 +450,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
     (minesweeper-debug "in pick, valid position chosen")
     (when *minesweeper-first-move*
       (minesweeper-debug "in pick, first-move is on. Calling view-mine.")
-      (minesweeper-fill-field col row)
+      (minesweeper-fill-field row col)
       (setq *minesweeper-first-move* nil))
     (minesweeper-debug "in pick, done with first-move check. Getting the value of the square.")
     (let ((val (minesweeper-view-mine col row 't)))
