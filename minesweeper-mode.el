@@ -292,7 +292,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 	(minesweeper-debug "picked a random mine at position " (number-to-string rand) ". The mine is row:f" (number-to-string (car ele)) "\tcol: " (number-to-string (cadr ele)) ". We've picked " (number-to-string i)" mines so far.")
 	(aset mines rand (aref mines (- square-count i 1)))
 	(minesweeper-set-mine (car ele) (cadr ele) ?X)
-	(minesweeper-inform-around (car ele) (cadr ele))))))
+	(minesweeper-inform-around (cadr ele) (car ele))))))
 
 (defun minesweeper-position ()
     "Return the current position of point as a minesweeper position construct. This construct is a list where the first element is the row value, the second is the col value, and the third is whether the position is in bounds."
