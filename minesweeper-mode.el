@@ -125,7 +125,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
   "The default number of mines")
 
 (defvar *minesweeper-field* nil
-  "The minefield itself. If a mine is in the square, ?X is stored. Otherwise, the number of mines in neighboring squares is stored.")
+  "The minefield itself. If a mine is in the square, ?X is stored. Otherwise, the number of mines in neighboring squares is stored. This is a hashtable where the key is a list. The first element of the list is the column, and the second is the row.")
 
 (defvar *minesweeper-reveals* nil
   "Holds 't in (col, row) if (col, row) has been revealed")
@@ -397,7 +397,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
     neighbors))
 
 (defun minesweeper-print-field (&optional reveal)
-  "Print out the minefield."
+  "Print out the minefield. The origin is displayed as the upper left corner."
   (minesweeper-debug "Printing out the field")
   (let ((inhibit-read-only t))
     (erase-buffer)
