@@ -318,7 +318,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 	   val
 	   *minesweeper-field*))
 
-(defun minesweeper-reveal (col row)
+(defun minesweeper-reveal (row col)
   "Reveals (col, row)."
   (puthash (list col row)
 	   't
@@ -468,7 +468,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 	      (unless (or (minesweeper-is-revealed cur-col cur-row)
 			  (minesweeper-marked cur-col cur-row))
 		(minesweeper-debug "it's not revealed, so reveal it")
-		(minesweeper-reveal cur-col cur-row)
+		(minesweeper-reveal cur-row cur-col)
 		(if (eq (setq *minesweeper-blanks-left* (1- *minesweeper-blanks-left*))
 			0)
 		    (progn (minesweeper-win-game)
