@@ -442,7 +442,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 			     (minesweeper-get-face val))))
 
 (defun minesweeper-pick (col row)
-  "Reveals the square at position (col, row). If the square is zero, "
+  "Reveals the square at position (col, row). If the square is zero,  pick all the neighbors around (col, row)."
   (minesweeper-debug "starting pick with args:" (number-to-string col) " " (number-to-string row))
   (unless (or (not (minesweeper-in-bounds row col))
 	      (minesweeper-is-revealed col row)
