@@ -268,7 +268,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 		   (minesweeper-for row 0 (1- *minesweeper-board-height*)
 				    (minesweeper-debug "inside inner loop -- setting up mine " (number-to-string col) " " (number-to-string row))
 				    (minesweeper-set-mine row col ?0)
-				    (minesweeper-hide col row)
+				    (minesweeper-hide row col)
 				    (minesweeper-unmark col row)))
   (minesweeper-debug "done setting zeros; now inserting mines")
   (minesweeper-insert-mines *minesweeper-mines* protect-col protect-row))
@@ -324,7 +324,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 	   't
 	   *minesweeper-reveals*))
 
-(defun minesweeper-hide (col row)
+(defun minesweeper-hide (row col)
   "Hides (col, row)."
   (puthash (list col row)
 	   nil
