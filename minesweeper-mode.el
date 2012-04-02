@@ -368,7 +368,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 (defun minesweeper-inform-around (col row &optional amount)
   "takes in a square, and increases the values of all its empty neighbors by 'amount"
   (mapc (lambda (position)
-	  (minesweeper-++ (car position) (cdr position) (or amount 1)))
+	  (minesweeper-++ (car position) (cdr position) amount))
 	(minesweeper-neighbors col row)))
 
 (defun minesweeper-++ (col row &optional amount)
