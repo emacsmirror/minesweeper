@@ -301,7 +301,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
       (list row col (minesweeper-in-bounds row col))))
 
 (defun minesweeper-view-mine (row col &optional reveal)
-  "If reveal is true, or if the selected mine has been revealed, returns the value at position (col, row), where the origin is the upper left corner of the minefield. Otherwise, it returns * if the square is marked, - if it is not"
+  "If reveal is true, or if the selected mine has been revealed, returns the value at position (col, row). Otherwise, it returns the character * if the square is marked, the character - if it is not."
   (minesweeper-debug "called view-mine " (number-to-string col) " " (number-to-string row) " " (if reveal "reveal!" "hide"))
   (cond ((or reveal
 	     (minesweeper-is-revealed col row))
