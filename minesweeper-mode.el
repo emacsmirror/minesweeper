@@ -416,6 +416,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 (defun minesweeper-refresh-field ()
   "Prints out the new minefield, putting point back where it was when this function was called."
   (multiple-value-bind (row col) (minesweeper-position)
+    (minesweeper-debug (format "Point is currently at (%d, %d)." row col))
     (minesweeper-print-field)
     (goto-char (point-min))
     (forward-char col)
