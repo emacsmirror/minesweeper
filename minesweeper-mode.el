@@ -267,7 +267,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 		   (minesweeper-debug "inside outer loop -- col is " (number-to-string col))
 		   (minesweeper-for row 0 (1- *minesweeper-board-height*)
 				    (minesweeper-debug "inside inner loop -- setting up mine " (number-to-string col) " " (number-to-string row))
-				    (minesweeper-set-mine col row ?0)
+				    (minesweeper-set-mine row col ?0)
 				    (minesweeper-hide col row)
 				    (minesweeper-unmark col row)))
   (minesweeper-debug "done setting zeros; now inserting mines")
@@ -291,7 +291,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 	     (ele (aref mines rand)))
 	(minesweeper-debug "picked a random mine at position " (number-to-string rand) ". The mine is " (number-to-string (car ele)) "\t" (number-to-string (cadr ele)) ". We've picked " (number-to-string i)" mines so far.")
 	(aset mines rand (aref mines (- square-count i 1)))
-	(minesweeper-set-mine (car ele) (cadr ele) ?X)
+	(minesweeper-set-mine (cadr ele) (car ele) ?X)
 	(minesweeper-inform-around (car ele) (cadr ele))))))
 
 (defun minesweeper-position ()
@@ -312,7 +312,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 	('t
 	 ?-)))
 
-(defun minesweeper-set-mine (col row val)
+(defun minesweeper-set-mine (row col val)
   "Inserts val into the mine at (col, row)"
   (puthash (list col row)
 	   val
@@ -376,8 +376,8 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
   (let ((val (minesweeper-view-mine row col 't)))
     (when (and (<= ?0 val)
 	       (<= val ?8))
-      (minesweeper-set-mine col
-			    row
+      (minesweeper-set-mine row
+			    col
 			    (+ val
 			       (or amount 1))))))
 
