@@ -517,12 +517,12 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
       (minesweeper-debug "finishing choose"))))
 
 (defun minesweeper-choose-around ()
-  "Pick all non-marked cells around point. It does not include the cell at point."
+  "Choose all non-marked cells around point. It does not include the cell at point. This is a user-facing function."
   (interactive)
   (minesweeper-debug "starting choose-around")
   (unless *minesweeper-game-over*
-    (multiple-value-bind (row col in-bounds) (minesweeper-position)
-      (when in-bounds
+    (multiple-value-bind (row col) (minesweeper-position)
+      (when (minesweeper-neighbors-bounds row col)
         (catch 'game-end (minesweeper-pick-around col row)
                (minesweeper-refresh-field)))
       (minesweeper-debug "finishing choose-round"))))
@@ -540,9 +540,9 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
     (minesweeper-debug "ending choose-around-mouse")))
 
 (defun minesweeper-pick-around (col row)
-  "Pick all the squares around (col, row). As a precondition, (col, row) should be zero."
+  "Pick all the squares around (col, row) excluding (col, row). This is an internal function."
   (minesweeper-debug "called pick-around " (number-to-string col) " " (number-to-string row))
-  (when (minesweeper-in-bounds row col)
+  (when (minesweeper-neighbors-bounds row col)
     (mapc '(lambda (position)
 	     (minesweeper-debug "called pick-around-helper " (number-to-string col) " " (number-to-string row))
 	     (minesweeper-pick (car position) (cdr position)))
@@ -638,12 +638,14 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 	       (buffer-name (current-buffer)))
     (multiple-value-bind (row col) (minesweeper-position)
       (let ((point (point)))
-        (when (minesweeper-in-bounds row col)
+        (when (minesweeper-neighbors-bounds row col)
           (when (> row 0) ;; "top" overlay
             (let ((center (- point *minesweeper-board-width* 1)))
               (move-overlay *minesweeper-top-overlay*
                             (- center (min col 1))
-                            (+ center 1 (if (>= col (1- *minesweeper-board-width*)) 0 1))
+                            (+ center (cond ((< col (1- *minesweeper-board-width*)) 2)
+                                            ((= col (1- *minesweeper-board-width*)) 1)
+                                            ((> col (1- *minesweeper-board-width*)) 0)))
                             (get-buffer "minesweeper"))))
           (when (> col 0) ;; "left" overlay
             (move-overlay *minesweeper-left-overlay* (1- point) point (get-buffer "minesweeper")))
@@ -653,7 +655,9 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
             (let ((center (+ point *minesweeper-board-width* 1)))
               (move-overlay *minesweeper-bottom-overlay*
                             (- center (if (eq col 0) 0 1))
-                            (+ center 1 (if (>= col (1- *minesweeper-board-width*)) 0 1))
+                            (+ center (cond ((< col (1- *minesweeper-board-width*)) 2)
+                                            ((= col (1- *minesweeper-board-width*)) 1)
+                                            ((> col (1- *minesweeper-board-width*)) 0)))
                             (get-buffer "minesweeper")))))))))
 
 (defun minesweeper-get-face (val)
@@ -687,6 +691,13 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
        (< col *minesweeper-board-width*)
        (< -1 row)
        (< row *minesweeper-board-height*)))
+
+(defun minesweeper-neighbors-bounds (row col)
+  "Returns 't iff (row, col) has at least one neighbor in the minefield. I.e., (row, col) is in the minefield, or it neighbors the minefield."
+    (and (<= -1 col) ;;Right now, you can't get negative rows or columns. Maybe in the future?
+       (<= col *minesweeper-board-width*)
+       (<= -1 row)
+       (<= row *minesweeper-board-height*)))
 
 
 ;;; minesweeper-mode.el ends here
