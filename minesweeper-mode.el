@@ -246,7 +246,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 					*minesweeper-board-height*)
 				     *minesweeper-mines*)
 	*minesweeper-first-move* 't
-	*minesweeper-game-epoch* (current-time)
+	*minesweeper-game-epoch* nil
 	*minesweeper-mark-count* 0
 	*minesweeper-game-over* nil)
   (minesweeper-debug "most global vars set -- checking for overpopulation of mines.")
@@ -507,6 +507,8 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
   "This is the function called when the user picks a mine."
   (interactive)
   (minesweeper-debug "starting choose")
+  (unless *minesweeper-game-epoch*
+    (setq *minesweeper-game-epoch* (current-time)))
   (unless *minesweeper-game-over*
     (multiple-value-bind (row col in-bounds) (minesweeper-position)
       (when in-bounds
