@@ -417,7 +417,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
   "Prints out the new minefield, putting point back where it was when this function was called."
   (let ((pt (point)))
     (minesweeper-print-field)
-    (goto-char pt))
+    (goto-char pt)))
 
 (defun minesweeper-refresh-square (col row)
   "Refreshes the printed value of (col, row)"
