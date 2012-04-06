@@ -406,9 +406,10 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
     neighbors))
 
 (defun minesweeper-print-field (&optional reveal)
-  "Print out the minefield. The origin is displayed as the upper left corner."
+  "Print out the minefield, then put point back where it was when the function was called. The origin is displayed as the upper left corner."
   (minesweeper-debug "Printing out the field")
-  (let ((inhibit-read-only t))
+  (let ((inhibit-read-only t)
+        (pt (point)))
     (erase-buffer)
     (minesweeper-for row 0 (1- *minesweeper-board-height*)
 		     (minesweeper-for col 0 (1- *minesweeper-board-width*)
@@ -419,13 +420,8 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
       (insert (number-to-string *minesweeper-mark-count*)
 	      " of "
 	      (number-to-string *minesweeper-mines*)
-	      " marked.")))
-  (minesweeper-debug "Field is printed out"))
-
-(defun minesweeper-refresh-field ()
-  "Prints out the new minefield, putting point back where it was when this function was called."
-  (let ((pt (point)))
-    (minesweeper-print-field)
+	      " marked."))
+    (minesweeper-debug "Field is printed out")
     (goto-char pt)))
 
 (defun minesweeper-refresh-square (col row)
@@ -496,7 +492,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
     (multiple-value-bind (row col in-bounds) (minesweeper-position)
       (when in-bounds
         (minesweeper-invert-mark col row)
-        (minesweeper-refresh-field)))))
+        (minesweeper-print-field)))))
 
 (defun minesweeper-toggle-mark-mouse (click)
   "Set the marked status of the clicked-on square to the opposite of what it currently is."
@@ -509,7 +505,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
       (when (minesweeper-in-bounds col row)
         (minesweeper-invert-mark col row)
         (select-window window)
-        (minesweeper-refresh-field)))))
+        (minesweeper-print-field)))))
 
 
 (defun minesweeper-choose ()
@@ -523,7 +519,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
       (when in-bounds
         (catch 'game-end (minesweeper-pick col row)
                (if (eq (minesweeper-view-mine row col) ?0)
-                   (minesweeper-refresh-field)
+                   (minesweeper-print-field)
                  (minesweeper-refresh-square col row))))
       (minesweeper-debug "finishing choose"))))
 
@@ -535,7 +531,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
     (multiple-value-bind (row col) (minesweeper-position)
       (when (minesweeper-neighbors-bounds row col)
         (catch 'game-end (minesweeper-pick-around col row)
-               (minesweeper-refresh-field)))
+               (minesweeper-print-field)))
       (minesweeper-debug "finishing choose-round"))))
 
 (defun minesweeper-choose-around-mouse (click)
@@ -547,7 +543,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 	  (pos (elt (cadr click) 6)))
       (catch 'game-end (minesweeper-pick-around (car pos) (cdr pos))
 	     (select-window window)
-	     (minesweeper-refresh-field)))
+	     (minesweeper-print-field)))
     (minesweeper-debug "ending choose-around-mouse")))
 
 (defun minesweeper-pick-around (col row)
