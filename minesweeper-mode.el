@@ -106,6 +106,9 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 (defface minesweeper-neighbor
   '((t (:background "#C0FFFF"))) "face for the neighbors of point")
 
+(defface minesweeper-explode
+  '((t (:background "#FF0000"))) "face for a clicked-on mine")
+
 (defvar *minesweeper-board-width* nil
   "The number of columns on the Minesweeper field.")
 
@@ -177,6 +180,12 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
     (overlay-put overlay 'face 'minesweeper-neighbor)
     overlay)
   "The overlay to go below point")
+
+(defvar *minesweeper-explode-overlay*
+  (let ((overlay (make-overlay 0 0)))
+    (overlay-put overlay 'face 'minesweeper-explode)
+    overlay)
+  "The overlay that marks the chosen square iff it was a mine.")
 
 (defvar *minesweeper-mark-count*
   0
@@ -554,14 +563,16 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
   "Print the lose-game message and prompt for a new one."
   (setq *minesweeper-losses* (1+ *minesweeper-losses*))
   (minesweeper-end-game (concat "You lose. This game took "
-				(minesweeper-game-duration-message)
-				"You chose spot ("
-				(number-to-string col)
-				", "
-				(number-to-string row)
-				") which was a bomb. "
-				(minesweeper-record-message)
-				"Another game? ")))
+                                (minesweeper-game-duration-message)
+                                "You chose spot ("
+                                (number-to-string col)
+                                ", "
+                                (number-to-string row)
+                                ") which was a bomb. "
+                                (minesweeper-record-message)
+                                "Another game? ")
+                        (minesweeper-position)))
+
 
 (defun minesweeper-win-game ()
   "Print the win-game message and prompt for a new one."
@@ -571,10 +582,19 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 				(minesweeper-record-message)
 				"Another game? ")))
 
-(defun minesweeper-end-game (message)
-  "ends the game, prompting for a new game with message"
+(defun minesweeper-end-game (message &optional exploded-position)
+  "End the game, prompting for a new game with message. Returns whether the user requested another game."
   (setq *minesweeper-game-over* t)
   (minesweeper-print-field 't)
+  (when exploded-position
+    (let ((point (+ (* (car exploded-position)
+                       (1+ *minesweeper-board-width*)) ;;the new line at the end of the board counts as a character
+                    (cadr exploded-position)
+                    1)));; (point) is 1-based
+      (move-overlay *minesweeper-explode-overlay*
+                    point
+                    (1+ point)
+                    (get-buffer "minesweeper"))))
   (when (y-or-n-p message)
     (minesweeper-begin-game *minesweeper-board-width* *minesweeper-board-height* *minesweeper-mines*)))
 
