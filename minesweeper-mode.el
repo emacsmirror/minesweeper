@@ -344,9 +344,9 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
   (gethash (list col row)
 	   *minesweeper-reveals*))
 
-(defun minesweeper-mark (col row)
-  "Marks the square (col, row) as having a mine. It can't be selected until it is unmarked"
-  (minesweeper-debug "marking square " (number-to-string col) "\t" (number-to-string row))
+(defun minesweeper-mark (row col)
+  "Marks the square (row, col) as having a mine. It can't be selected until it is unmarked"
+  (minesweeper-debug "marking square " (number-to-string row) "\t" (number-to-string col))
   (unless (minesweeper-marked col row)
     (puthash (list col row)
 	     't
@@ -367,7 +367,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 	     (not (minesweeper-is-revealed row col)))
     (if (minesweeper-marked col row)
 	(minesweeper-unmark col row)
-      (minesweeper-mark col row))))
+      (minesweeper-mark row col))))
 
 (defun minesweeper-marked (col row)
   "Returns 't if (col, row) is marked as having a mine, nil otherwise"
