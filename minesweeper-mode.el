@@ -313,7 +313,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
   "If reveal is true, or if the selected mine has been revealed, returns the value at position (col, row). Otherwise, it returns the character * if the square is marked, the character - if it is not."
   (minesweeper-debug "called view-mine " (number-to-string col) " " (number-to-string row) " " (if reveal "reveal!" "hide"))
   (cond ((or reveal
-	     (minesweeper-is-revealed col row))
+	     (minesweeper-is-revealed row col))
 	 (gethash (list col row)
 		  *minesweeper-field*))
 	((minesweeper-marked col row)
@@ -339,8 +339,8 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 	   nil
 	   *minesweeper-reveals*))
 
-(defun minesweeper-is-revealed (col row)
-  "Returns 't if (col, row) is revealed, nil otherwise"
+(defun minesweeper-is-revealed (row col)
+  "Returns 't if (row, col) is revealed, nil otherwise"
   (gethash (list col row)
 	   *minesweeper-reveals*))
 
@@ -364,7 +364,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 (defun minesweeper-invert-mark (col row)
   "If (col, row) is marked, unmark it. Otherwise, mark it."
   (when (and (minesweeper-in-bounds row col)
-	     (not (minesweeper-is-revealed col row)))
+	     (not (minesweeper-is-revealed row col)))
     (if (minesweeper-marked col row)
 	(minesweeper-unmark col row)
       (minesweeper-mark col row))))
@@ -448,7 +448,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
   "Reveals the square at position (col, row). If the square is zero,  pick all the neighbors around (col, row)."
   (minesweeper-debug "starting pick with args:" (number-to-string col) " " (number-to-string row))
   (unless (or (not (minesweeper-in-bounds row col))
-	      (minesweeper-is-revealed col row)
+	      (minesweeper-is-revealed row col)
 	      (minesweeper-marked col row))
     (minesweeper-debug "in pick, valid position chosen")
     (when *minesweeper-first-move*
@@ -468,7 +468,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 		   (cur-col (car cur))
 		   (cur-row (cdr cur)))
 	      (minesweeper-debug "View-mine says " (number-to-string cur-col) ", " (number-to-string cur-row) " mine = " (make-string 1 (minesweeper-view-mine cur-row cur-col 't)))
-	      (unless (or (minesweeper-is-revealed cur-col cur-row)
+	      (unless (or (minesweeper-is-revealed cur-row cur-col)
 			  (minesweeper-marked cur-col cur-row))
 		(minesweeper-debug "it's not revealed, so reveal it")
 		(minesweeper-reveal cur-row cur-col)
