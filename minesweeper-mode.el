@@ -568,41 +568,38 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 (defun minesweeper-lose-game (col row)
   "Print the lose-game message and prompt for a new one."
   (setq *minesweeper-losses* (1+ *minesweeper-losses*))
-  (minesweeper-end-game (concat "You lose. This game took "
-                                (minesweeper-game-duration-message)
-                                "You chose spot ("
-                                (number-to-string col)
-                                ", "
-                                (number-to-string row)
-                                ") which was a bomb. "
-                                (minesweeper-record-message)
-                                "Another game? ")
-                        (minesweeper-position)))
-
+  (minesweeper-end-game nil))
 
 (defun minesweeper-win-game ()
   "Print the win-game message and prompt for a new one."
   (setq *minesweeper-wins* (1+ *minesweeper-wins*))
-  (minesweeper-end-game (concat "Congrats! You've won in "
+  (minesweeper-end-game 't))
+
+(defun minesweeper-end-game (won)
+  "End the game: print the revealed minefield, and prompt for a new game. This should be called immediately after selecting the winning or losing square, so point is still on that square."
+  (setq *minesweeper-game-over* 't)
+  (minesweeper-print-field 't)
+  (multiple-value-bind (row col) (minesweeper-position)
+      (unless won
+        (let ((point (+ (* row
+                           (1+ *minesweeper-board-width*)) ;;the new line at the end of the board counts as a character
+                        col
+                        1)));; (point) is 1-based
+          (move-overlay *minesweeper-explode-overlay*
+                        point
+                        (1+ point)
+                        (get-buffer "minesweeper"))))
+    (when (y-or-n-p (if won
+                        (concat "Congrats! You've won in "
 				(minesweeper-game-duration-message)
 				(minesweeper-record-message)
-				"Another game? ")))
+				"Another game? ")
+                      (concat "Sorry, you lost. You chose a bomb. This game took "
+                                (minesweeper-game-duration-message)
+                                (minesweeper-record-message)
+                                "Another game? ")))
+      (minesweeper-begin-game *minesweeper-board-width* *minesweeper-board-height* *minesweeper-mines*))))
 
-(defun minesweeper-end-game (message &optional exploded-position)
-  "End the game, prompting for a new game with message. Returns whether the user requested another game."
-  (setq *minesweeper-game-over* t)
-  (minesweeper-print-field 't)
-  (when exploded-position
-    (let ((point (+ (* (car exploded-position)
-                       (1+ *minesweeper-board-width*)) ;;the new line at the end of the board counts as a character
-                    (cadr exploded-position)
-                    1)));; (point) is 1-based
-      (move-overlay *minesweeper-explode-overlay*
-                    point
-                    (1+ point)
-                    (get-buffer "minesweeper"))))
-  (when (y-or-n-p message)
-    (minesweeper-begin-game *minesweeper-board-width* *minesweeper-board-height* *minesweeper-mines*)))
 
 (defun minesweeper-game-duration-message ()
   "Returns the duration the current game has taken as a human-readable string."
