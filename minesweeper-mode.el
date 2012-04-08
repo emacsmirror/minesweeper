@@ -592,10 +592,12 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
     (when (y-or-n-p (if won
                         (concat "Congrats! You've won in "
 				(minesweeper-game-duration-message)
+                                ". "
 				(minesweeper-record-message)
 				"Another game? ")
                       (concat "Sorry, you lost. You chose a bomb. This game took "
                                 (minesweeper-game-duration-message)
+                                ". "
                                 (minesweeper-record-message)
                                 "Another game? ")))
       (minesweeper-begin-game *minesweeper-board-width* *minesweeper-board-height* *minesweeper-mines*))))
@@ -604,7 +606,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 (defun minesweeper-game-duration-message ()
   "Returns the duration the current game has taken as a human-readable string."
   (let ((game-duration (time-subtract (current-time) *minesweeper-game-epoch*)))
-    (format-seconds "%H, %M, %S. " (+ (* (car game-duration)
+    (format-seconds "%H, %M, %z%S" (+ (* (car game-duration)
 					 (expt 2 16))
 				      (cadr game-duration)))))
 
