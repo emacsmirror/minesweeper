@@ -418,6 +418,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 				      (minesweeper-insert-value (minesweeper-view-mine row col reveal)))
 		     (newline))
     (unless reveal
+      (insert-char ?\s *minesweeper-board-width*) ;;insert a row below the field for choosing neighbors.
       (newline)
       (insert (number-to-string *minesweeper-mark-count*)
 	      " of "
