@@ -447,9 +447,9 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 		       (list 'face
 			     (minesweeper-get-face val))))
 
-(defun minesweeper-pick (col row)
-  "Reveals the square at position (col, row). If the square is zero,  pick all the neighbors around (col, row)."
-  (minesweeper-debug "starting pick with args:" (number-to-string col) " " (number-to-string row))
+(defun minesweeper-pick (row col)
+  "Reveals the square at position (row, col). If the square is zero,  pick all the neighbors around (col, row)."
+  (minesweeper-debug "starting pick with args:" (number-to-string row) " " (number-to-string col))
   (unless (or (not (minesweeper-in-bounds row col))
 	      (minesweeper-is-revealed row col)
 	      (minesweeper-marked row col))
@@ -524,7 +524,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
   (unless *minesweeper-game-over*
     (multiple-value-bind (row col in-bounds) (minesweeper-position)
       (when in-bounds
-        (catch 'game-end (minesweeper-pick col row)
+        (catch 'game-end (minesweeper-pick row col)
                (if (eq (minesweeper-view-mine row col) ?0)
                    (minesweeper-print-field)
                  (minesweeper-refresh-square row col))))
@@ -565,7 +565,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
   (when (minesweeper-neighbors-bounds row col)
     (mapc '(lambda (position)
 	     (minesweeper-debug "called pick-around-helper " (number-to-string col) " " (number-to-string row))
-	     (minesweeper-pick (car position) (cdr position)))
+	     (minesweeper-pick (cdr position) (car position)))
 	  (minesweeper-neighbors row col))))
 
 (defun minesweeper-lose-game (col row)
