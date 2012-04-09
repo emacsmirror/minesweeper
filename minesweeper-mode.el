@@ -301,7 +301,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 	(minesweeper-debug "picked a random mine at position " (number-to-string rand) ". The mine is row:f" (number-to-string (car ele)) "\tcol: " (number-to-string (cadr ele)) ". We've picked " (number-to-string i)" mines so far.")
 	(aset mines rand (aref mines (- square-count i 1)))
 	(minesweeper-set-mine (car ele) (cadr ele) ?X)
-	(minesweeper-inform-around (cadr ele) (car ele))))))
+	(minesweeper-inform-around (car ele) (cadr ele))))))
 
 (defun minesweeper-position ()
     "Return the current position of point as a minesweeper position construct. This construct is a list where the first element is the row value, the second is the col value, and the third is whether the position is in bounds."
@@ -374,7 +374,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
   (gethash (list col row)
 	   *minesweeper-marks*))
 
-(defun minesweeper-inform-around (col row &optional amount)
+(defun minesweeper-inform-around (row col &optional amount)
   "takes in a square, and increases the values of all its empty neighbors by 'amount"
   (mapc (lambda (position)
 	  (minesweeper-++ (car position) (cdr position) amount))
