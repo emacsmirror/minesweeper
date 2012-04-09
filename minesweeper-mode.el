@@ -133,7 +133,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
   "The minefield itself. If a mine is in the square, ?X is stored. Otherwise, the number of mines in neighboring squares is stored. This is a hashtable where the key is a list. The first element of the list is the row, and the second is the column.")
 
 (defvar *minesweeper-reveals* nil
-  "Holds 't in (col, row) if (col, row) has been revealed")
+  "Holds 't in (row, col) if (row, col) has been revealed")
 
 (defvar *minesweeper-marks* nil
   "Holds 't in (col, row) iff (col, row) has been marked. A marked square cannot be chosen.")
@@ -331,19 +331,19 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 
 (defun minesweeper-reveal (row col)
   "Reveals (col, row)."
-  (puthash (list col row)
+  (puthash (list row col)
 	   't
 	   *minesweeper-reveals*))
 
 (defun minesweeper-hide (row col)
   "Hides (col, row)."
-  (puthash (list col row)
+  (puthash (list row col)
 	   nil
 	   *minesweeper-reveals*))
 
 (defun minesweeper-is-revealed (row col)
   "Returns 't if (row, col) is revealed, nil otherwise"
-  (gethash (list col row)
+  (gethash (list row col)
 	   *minesweeper-reveals*))
 
 (defun minesweeper-mark (row col)
