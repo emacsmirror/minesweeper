@@ -378,7 +378,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
   "takes in a square, and increases the values of all its empty neighbors by 'amount"
   (mapc (lambda (position)
 	  (minesweeper-++ (cdr position) (car position) amount))
-	(minesweeper-neighbors col row)))
+	(minesweeper-neighbors row col)))
 
 (defun minesweeper-++ (row col &optional amount)
   "Increments the value at square (row, col), unless the square is a bomb"
@@ -390,7 +390,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 			    (+ val
 			       (or amount 1))))))
 
-(defun minesweeper-neighbors (col row)
+(defun minesweeper-neighbors (row col)
   "Returns a list of the neighbors of (col, row)."
   (let ((neighbors nil))
     (minesweeper-for newcol
@@ -482,7 +482,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 		    (mapc '(lambda (position)
 			     (push position
 				   to-reveal))
-			  (minesweeper-neighbors cur-col cur-row))))))))))))
+			  (minesweeper-neighbors cur-row cur-col))))))))))))
 
 
 (defun minesweeper-toggle-mark ()
@@ -563,7 +563,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
     (mapc '(lambda (position)
 	     (minesweeper-debug "called pick-around-helper " (number-to-string col) " " (number-to-string row))
 	     (minesweeper-pick (car position) (cdr position)))
-	  (minesweeper-neighbors col row))))
+	  (minesweeper-neighbors row col))))
 
 (defun minesweeper-lose-game (col row)
   "Print the lose-game message and prompt for a new one."
