@@ -136,7 +136,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
   "Holds 't in (row, col) if (row, col) has been revealed")
 
 (defvar *minesweeper-marks* nil
-  "Holds 't in (col, row) iff (col, row) has been marked. A marked square cannot be chosen.")
+  "Holds 't in (row, col) iff (row, col) has been marked. A marked square cannot be chosen.")
 
 (defvar *minesweeper-blanks-left* 0
   "Holds the number of empty squares left. After 'minesweeper-init has been called, the user will win the game when this becomes zero again.")
@@ -350,21 +350,21 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
   "Marks the square (row, col) as having a mine. It can't be selected until it is unmarked"
   (minesweeper-debug "marking square " (number-to-string row) "\t" (number-to-string col))
   (unless (minesweeper-marked row col)
-    (puthash (list col row)
+    (puthash (list row col)
 	     't
 	     *minesweeper-marks*)
     (setq *minesweeper-mark-count* (1+ *minesweeper-mark-count*))))
 
 (defun minesweeper-unmark (row col)
-  "Removes the mark from (col, row). It can now be selected."
+  "Removes the mark from (row, col). It can now be selected."
   (when (minesweeper-marked row col)
-    (puthash (list col row)
+    (puthash (list row col)
 	     nil
 	     *minesweeper-marks*)
     (setq *minesweeper-mark-count* (1- *minesweeper-mark-count*))))
 
 (defun minesweeper-invert-mark (row col)
-  "If (col, row) is marked, unmark it. Otherwise, mark it."
+  "If (row, col) is marked, unmark it. Otherwise, mark it."
   (when (and (minesweeper-in-bounds row col)
 	     (not (minesweeper-is-revealed row col)))
     (if (minesweeper-marked row col)
@@ -372,8 +372,8 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
       (minesweeper-mark row col))))
 
 (defun minesweeper-marked (row col)
-  "Returns 't if (col, row) is marked as having a mine, nil otherwise"
-  (gethash (list col row)
+  "Returns 't if (row, col) is marked as having a mine, nil otherwise"
+  (gethash (list row col)
 	   *minesweeper-marks*))
 
 (defun minesweeper-inform-around (row col &optional amount)
