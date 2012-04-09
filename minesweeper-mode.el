@@ -424,9 +424,9 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
     (minesweeper-debug "Field is printed out")
     (goto-char pt)))
 
-(defun minesweeper-refresh-square (col row)
-  "Refreshes the printed value of (col, row)"
-  (minesweeper-debug "starting refresh-square. (col, row) is (" (number-to-string col) ",\t" (number-to-string row) ")")
+(defun minesweeper-refresh-square (row col)
+  "Refreshes the printed value of (row, col)"
+  (minesweeper-debug "starting refresh-square. (row, col) is (" (number-to-string row) ",\t" (number-to-string col) ")")
   (when (minesweeper-in-bounds row col)
     (let ((val (minesweeper-view-mine row col)))
       (goto-char (point-min))
@@ -525,7 +525,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
         (catch 'game-end (minesweeper-pick col row)
                (if (eq (minesweeper-view-mine row col) ?0)
                    (minesweeper-print-field)
-                 (minesweeper-refresh-square col row))))
+                 (minesweeper-refresh-square row col))))
       (minesweeper-debug "finishing choose"))))
 
 (defun minesweeper-choose-around ()
