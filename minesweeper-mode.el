@@ -130,7 +130,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
   "The default number of mines")
 
 (defvar *minesweeper-field* nil
-  "The minefield itself. If a mine is in the square, ?X is stored. Otherwise, the number of mines in neighboring squares is stored. This is a hashtable where the key is a list. The first element of the list is the column, and the second is the row.")
+  "The minefield itself. If a mine is in the square, ?X is stored. Otherwise, the number of mines in neighboring squares is stored. This is a hashtable where the key is a list. The first element of the list is the row, and the second is the column.")
 
 (defvar *minesweeper-reveals* nil
   "Holds 't in (col, row) if (col, row) has been revealed")
@@ -316,7 +316,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
   (minesweeper-debug "called view-mine " (number-to-string col) " " (number-to-string row) " " (if reveal "reveal!" "hide"))
   (cond ((or reveal
 	     (minesweeper-is-revealed row col))
-	 (gethash (list col row)
+	 (gethash (list row col)
 		  *minesweeper-field*))
 	((minesweeper-marked row col)
 	 ?*)
@@ -325,7 +325,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 
 (defun minesweeper-set-mine (row col val)
   "Inserts val into the mine at (col, row)"
-  (puthash (list col row)
+  (puthash (list row col)
 	   val
 	   *minesweeper-field*))
 
