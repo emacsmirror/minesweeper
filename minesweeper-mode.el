@@ -1,4 +1,4 @@
-;;; minesweeper-mode.el --- play minesweeper in Emacs
+`;;; minesweeper-mode.el --- play minesweeper in Emacs
 
 ;; Copyright 2010-2012 Zachary Kanfer
 
@@ -42,6 +42,8 @@
     (define-key map (kbd "n") 'next-line)
     (define-key map (kbd "p") 'previous-line)
     (define-key map (kbd "C-p") 'previous-line)
+    (define-key map (kbd "a") 'move-beginning-of-line)
+    (define-key map (kbd "e") 'move-end-of-line)
     (define-key map (kbd "c") 'minesweeper-choose-around)
     (define-key map [mouse-2] 'minesweeper-choose-around-mouse)
     (define-key map (kbd "s") 'minesweeper-toggle-show-neighbors)
