@@ -1,4 +1,4 @@
-`;;; minesweeper-mode.el --- play minesweeper in Emacs
+;;; minesweeper.el --- play minesweeper in Emacs
 
 ;; Copyright 2010-2012 Zachary Kanfer
 
@@ -730,5 +730,5 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
        (<= -1 row)
        (<= row *minesweeper-board-height*)))
 
-
-;;; minesweeper-mode.el ends here
+(provide 'minesweeper)
+;;; minesweeper.el ends here
