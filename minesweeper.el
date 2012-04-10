@@ -43,7 +43,7 @@
     (define-key map (kbd "p") 'previous-line)
     (define-key map (kbd "C-p") 'previous-line)
     (define-key map (kbd "a") 'move-beginning-of-line)
-    (define-key map (kbd "e") 'move-end-of-line)
+    (define-key map (kbd "e") 'minesweeper-move-end-of-field)
     (define-key map (kbd "c") 'minesweeper-choose-around)
     (define-key map [mouse-2] 'minesweeper-choose-around-mouse)
     (define-key map (kbd "s") 'minesweeper-toggle-show-neighbors)
@@ -217,6 +217,12 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 
 (defvar *minesweeper-game-over* nil
   "t if the user has selected a mine or selected all the empty squares, nil otherwise.")
+
+(defun minesweeper-move-end-of-field ()
+  "Move to the last cell in this row of the minefield."
+  (interactive)
+  (move-end-of-line nil)
+  (backward-char))
 
 (defun minesweeper-begin-game (&optional width height mines)
   "Prompt the user for the minefield size and number of mines, then initialize the game."
