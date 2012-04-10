@@ -278,7 +278,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 
 
 (defun minesweeper-fill-field (protect-row protect-col)
-  "Fills '*minesweeper-field* with '*minesweeper-mines* mines, and builds the neighbor count. It will not place any mines in the square (protect-col, protect-row)."
+  "Fills '*minesweeper-field* with '*minesweeper-mines* mines, and builds the neighbor count. It will not place any mines in the square (protect-row, protect-col)."
   (minesweeper-debug "filling the field")
   (minesweeper-for col 0 (1- *minesweeper-board-width*)
 		   (minesweeper-debug "inside outer loop -- col is " (number-to-string col))
