@@ -612,8 +612,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
         (minesweeper-for newrow 0 *minesweeper-board-height*
                          (minesweeper-for newcol 0 *minesweeper-board-width*
                                           (when (and (minesweeper-marked newrow newcol)
-                                                     (not (eq (minesweeper-view-mine newrow newcol 't)
-                                                              ?X)))
+                                                     (not (eq (minesweeper-is-mine newrow newcol))))
                                             (let ((pt (+ (* newrow
                                                             (1+ *minesweeper-board-height*))
                                                          1)))
