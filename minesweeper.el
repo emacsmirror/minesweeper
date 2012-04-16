@@ -111,6 +111,9 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
 (defface minesweeper-explode
   '((t (:background "#FF0000"))) "face for a clicked-on mine")
 
+(defface minesweeper-mismarked
+  '((t (:background "#888888"))) "face for mismarked mines, at end of game")
+
 (defvar *minesweeper-board-width* nil
   "The number of columns on the Minesweeper field.")
 
@@ -188,6 +191,12 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
     (overlay-put overlay 'face 'minesweeper-explode)
     overlay)
   "The overlay that marks the chosen square iff it was a mine.")
+
+(defvar *minesweeper-mismarked-overlay*
+  (let ((overlay (make-overlay 0 0)))
+    (overlay-put overlay 'face 'minesweeper-mismarked)
+    overlay)
+  "The overlay used at end of game to highlight marked squares that aren't mines.")
 
 (defvar *minesweeper-mark-count*
   0
@@ -596,19 +605,33 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
           (move-overlay *minesweeper-explode-overlay*
                         point
                         (1+ point)
-                        (get-buffer "minesweeper"))))
-    (when (y-or-n-p (if won
-                        (concat "Congrats! You've won in "
-				(minesweeper-game-duration-message)
-                                ". "
-				(minesweeper-record-message)
-				"Another game? ")
-                      (concat "Sorry, you lost. You chose a bomb. This game took "
-                                (minesweeper-game-duration-message)
-                                ". "
-                                (minesweeper-record-message)
-                                "Another game? ")))
-      (minesweeper-begin-game *minesweeper-board-width* *minesweeper-board-height* *minesweeper-mines*))))
+                        (get-buffer "minesweeper")))
+        (minesweeper-for newrow 0 *minesweeper-board-height*
+                         (minesweeper-for newcol 0 *minesweeper-board-width*
+                                          (when (and (minesweeper-marked newrow newcol)
+                                                     (not (eq (minesweeper-view-mine newrow newcol 't)
+                                                              ?X)))
+                                            (let ((pt (+ (* newrow
+                                                            (1+ *minesweeper-board-height*))
+                                                         1)))
+                                                         newcol
+                                              (minesweeper-debug "(" (number-to-string newrow) ", " (number-to-string newcol) ") is mismarked.")
+                                              (move-overlay (copy-overlay *minesweeper-mismarked-overlay*)
+                                                            pt
+                                                            (1+ pt)
+                                                            (get-buffer "minesweeper"))))))))
+  (when (y-or-n-p (if won
+                      (concat "Congrats! You've won in "
+                              (minesweeper-game-duration-message)
+                              ". "
+                              (minesweeper-record-message)
+                              "Another game? ")
+                    (concat "Sorry, you lost. You chose a bomb. This game took "
+                            (minesweeper-game-duration-message)
+                            ". "
+                            (minesweeper-record-message)
+                            "Another game? ")))
+    (minesweeper-begin-game *minesweeper-board-width* *minesweeper-board-height* *minesweeper-mines*)))
 
 
 (defun minesweeper-game-duration-message ()
