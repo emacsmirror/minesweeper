@@ -28,27 +28,6 @@
 
 (require 'cl)
 
-(defvar minesweeper-mode-map
-  (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "SPC") 'minesweeper-choose)
-    (define-key map (kbd "x") 'minesweeper-choose)
-    (define-key map (kbd "RET") 'minesweeper-choose)
-    (define-key map [mouse-1] 'minesweeper-choose)
-    (define-key map (kbd "m") 'minesweeper-toggle-mark)
-    (define-key map [mouse-3] 'minesweeper-toggle-mark-mouse)
-    (define-key map (kbd "b") 'backward-char)
-    (define-key map (kbd "f") 'forward-char)
-    (define-key map (kbd "C-n") 'next-line)
-    (define-key map (kbd "n") 'next-line)
-    (define-key map (kbd "p") 'previous-line)
-    (define-key map (kbd "C-p") 'previous-line)
-    (define-key map (kbd "a") 'move-beginning-of-line)
-    (define-key map (kbd "e") 'minesweeper-move-end-of-field)
-    (define-key map (kbd "c") 'minesweeper-choose-around)
-    (define-key map [mouse-2] 'minesweeper-choose-around-mouse)
-    (define-key map (kbd "s") 'minesweeper-toggle-show-neighbors)
-    map))
-
 (defun minesweeper () "Major mode for playing Minesweeper in Emacs.
 
 There's a field of squares; each square may hold a mine. Your goal is to uncover all the squares that don't have mines. If a revealed square doesn't have a mine, you'll see how many mines are in the eight neighboring squares. You may mark squares, which protects them from accidentally being revealed.
@@ -56,11 +35,7 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
 \\{minesweeper-mode-map}"
   (interactive)
   (switch-to-buffer "minesweeper")
-  (kill-all-local-variables)
-  (use-local-map minesweeper-mode-map)
-  (setq major-mode 'minesweeper-mode)
-  (setq mode-name "Minesweeper")
-  (toggle-read-only t)
+  (minesweeper-mode)
   (when *minesweeper-idle-timer*
     (cancel-timer *minesweeper-idle-timer*))
   (setq *minesweeper-idle-timer* (run-with-idle-timer *minesweeper-idle-delay*
@@ -68,9 +43,24 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
 						      'minesweeper-show-neighbors))
   (minesweeper-begin-game))
 
-(defun minesweeper-mode () "Major mode for playing Minesweeper.
-
-To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
+(define-derived-mode minesweeper-mode special-mode "minesweeper-mode"
+  (define-key minesweeper-mode-map (kbd "SPC") 'minesweeper-choose)
+  (define-key minesweeper-mode-map (kbd "x") 'minesweeper-choose)
+  (define-key minesweeper-mode-map (kbd "RET") 'minesweeper-choose)
+  (define-key minesweeper-mode-map [mouse-1] 'minesweeper-choose)
+  (define-key minesweeper-mode-map (kbd "m") 'minesweeper-toggle-mark)
+  (define-key minesweeper-mode-map [mouse-3] 'minesweeper-toggle-mark-mouse)
+  (define-key minesweeper-mode-map (kbd "b") 'backward-char)
+  (define-key minesweeper-mode-map (kbd "f") 'forward-char)
+  (define-key minesweeper-mode-map (kbd "C-n") 'next-line)
+  (define-key minesweeper-mode-map (kbd "n") 'next-line)
+  (define-key minesweeper-mode-map (kbd "p") 'previous-line)
+  (define-key minesweeper-mode-map (kbd "C-p") 'previous-line)
+  (define-key minesweeper-mode-map (kbd "a") 'move-beginning-of-line)
+  (define-key minesweeper-mode-map (kbd "e") 'minesweeper-move-end-of-field)
+  (define-key minesweeper-mode-map (kbd "c") 'minesweeper-choose-around)
+  (define-key minesweeper-mode-map [mouse-2] 'minesweeper-choose-around-mouse)
+  (define-key minesweeper-mode-map (kbd "s") 'minesweeper-toggle-show-neighbors))
 
 (defface minesweeper-blank
   '((t (:foreground "black"))) "face for blank spaces")
@@ -499,7 +489,7 @@ To learn how to play minesweeper, see the documentation for 'minesweeper'." nil)
                 (when (eq (minesweeper-view-mine cur-row cur-col 't)
                           ?0)
                   (minesweeper-debug "pushing neighbors onto the stack")
-                  (mapc '(lambda (position)
+                  (mapc #'(lambda (position)
                            (push position
                                  to-reveal))
                         (minesweeper-neighbors cur-row cur-col)))))))))))
