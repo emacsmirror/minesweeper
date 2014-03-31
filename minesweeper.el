@@ -1,6 +1,6 @@
 ;;; minesweeper.el --- play minesweeper in Emacs
 
-;; Copyright 2010-2012 Zachary Kanfer
+;; Copyright 2010-2012, 2014 Zachary Kanfer
 
 ;; Author: Zachary Kanfer <zkanfer@gmail.com>
 ;; Version: 2012.01.29
