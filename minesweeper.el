@@ -28,21 +28,6 @@
 
 (require 'cl)
 
-(defun minesweeper () "Major mode for playing Minesweeper in Emacs.
-
-There's a field of squares; each square may hold a mine. Your goal is to uncover all the squares that don't have mines. If a revealed square doesn't have a mine, you'll see how many mines are in the eight neighboring squares. You may mark squares, which protects them from accidentally being revealed.
-
-\\{minesweeper-mode-map}"
-  (interactive)
-  (switch-to-buffer "minesweeper")
-  (minesweeper-mode)
-  (when *minesweeper-idle-timer*
-    (cancel-timer *minesweeper-idle-timer*))
-  (setq *minesweeper-idle-timer* (run-with-idle-timer *minesweeper-idle-delay*
-						      t
-						      'minesweeper-show-neighbors))
-  (minesweeper-begin-game))
-
 (define-derived-mode minesweeper-mode special-mode "minesweeper-mode"
   (define-key minesweeper-mode-map (kbd "SPC") 'minesweeper-choose)
   (define-key minesweeper-mode-map (kbd "x") 'minesweeper-choose)
@@ -61,6 +46,27 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
   (define-key minesweeper-mode-map (kbd "c") 'minesweeper-choose-around)
   (define-key minesweeper-mode-map [mouse-2] 'minesweeper-choose-around-mouse)
   (define-key minesweeper-mode-map (kbd "s") 'minesweeper-toggle-show-neighbors))
+
+(defvar *minesweeper-idle-timer* nil
+  "The timer used to highlight neighbors")
+
+(defvar *minesweeper-idle-delay* 0.0625
+  "The time Emacs must be idle before highlighting the neigbors of point.")
+
+(defun minesweeper () "Major mode for playing Minesweeper in Emacs.
+
+There's a field of squares; each square may hold a mine. Your goal is to uncover all the squares that don't have mines. If a revealed square doesn't have a mine, you'll see how many mines are in the eight neighboring squares. You may mark squares, which protects them from accidentally being revealed.
+
+\\{minesweeper-mode-map}"
+  (interactive)
+  (switch-to-buffer "minesweeper")
+  (minesweeper-mode)
+  (when *minesweeper-idle-timer*
+    (cancel-timer *minesweeper-idle-timer*))
+  (setq *minesweeper-idle-timer* (run-with-idle-timer *minesweeper-idle-delay*
+						      t
+						      'minesweeper-show-neighbors))
+  (minesweeper-begin-game))
 
 (defface minesweeper-blank
   '((t (:foreground "black"))) "face for blank spaces")
@@ -207,12 +213,6 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
     (puthash ?* 'minesweeper-marked table)
     table)
   "The hashtable mapping a character to the face it should have.")
-
-(defvar *minesweeper-idle-timer* nil
-  "The timer used to highlight neighbors")
-
-(defvar *minesweeper-idle-delay* 0.0625
-  "The time Emacs must be idle before highlighting the neigbors of point.")
 
 (defvar *minesweeper-game-over* nil
   "t if the user has selected a mine or selected all the empty squares, nil otherwise.")
