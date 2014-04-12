@@ -113,19 +113,19 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
 (defvar *minesweeper-board-width* nil
   "The number of columns on the Minesweeper field.")
 
-(defvar *minesweeper-default-width* 10
+(defconst *minesweeper-default-width* 10
   "The default board width")
 
 (defvar *minesweeper-board-height* nil
   "The number of rows on the Minesweeper field.")
 
-(defvar *minesweeper-default-height* 10
+(defconst *minesweeper-default-height* 10
   "The default board height.")
 
 (defvar *minesweeper-mines* nil
   "The number of mines on the Minesweeper field.")
 
-(defvar *minesweeper-default-mines* 10
+(defconst *minesweeper-default-mines* 10
   "The default number of mines")
 
 (defvar *minesweeper-field* nil
