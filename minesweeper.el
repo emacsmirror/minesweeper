@@ -388,7 +388,7 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
 
 (defun minesweeper-inform-around (row col &optional amount)
   "takes in a square, and increases the values of all its empty neighbors by 'amount"
-  (mapc (lambda (position)
+  (mapc #'(lambda (position)
 	  (minesweeper-++ (car position) (cadr position) amount))
 	(minesweeper-neighbors row col)))
 
@@ -570,7 +570,7 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
   "Pick all the squares around (col, row) excluding (col, row). This is an internal function."
   (minesweeper-debug "called pick-around " (number-to-string row) " " (number-to-string col))
   (when (minesweeper-neighbors-bounds row col)
-    (mapc '(lambda (position)
+    (mapc #'(lambda (position)
 	     (minesweeper-debug "called pick-around-helper " (number-to-string col) " " (number-to-string row))
 	     (minesweeper-pick (car position) (cadr position)))
 	  (minesweeper-neighbors row col))))
