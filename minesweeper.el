@@ -69,46 +69,46 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
   (minesweeper-begin-game))
 
 (defface minesweeper-blank
-  '((t (:foreground "black"))) "face for blank spaces")
+  '((t (:foreground "black"))) "face for blank spaces" :group 'minesweeper-faces)
 
 (defface minesweeper-marked
-  '((t (:foreground "black"))) "face for marked spaces")
+  '((t (:foreground "black"))) "face for marked spaces" :group 'minesweeper-faces)
 
 (defface minesweeper-0
-  '((t (:foreground "Grey"))) "face for zero spaces")
+  '((t (:foreground "Grey"))) "face for zero spaces" :group 'minesweeper-faces)
 
 (defface minesweeper-1
-  '((t (:foreground "#2020FF"))) "face for 1 spaces")
+  '((t (:foreground "#2020FF"))) "face for 1 spaces" :group 'minesweeper-faces)
 
 (defface minesweeper-2
-  '((t (:foreground "#00C000"))) "face for 2 spaces")
+  '((t (:foreground "#00C000"))) "face for 2 spaces" :group 'minesweeper-faces)
 
 (defface minesweeper-3
-  '((t (:foreground "#6000A0"))) "face for 3 spaces")
+  '((t (:foreground "#6000A0"))) "face for 3 spaces" :group 'minesweeper-faces)
 
 (defface minesweeper-4
-  '((t (:foreground "#C00000"))) "face for 4 spaces")
+  '((t (:foreground "#C00000"))) "face for 4 spaces" :group 'minesweeper-faces)
 
 (defface minesweeper-5
-  '((t (:foreground "#008080"))) "face for 5 spaces")
+  '((t (:foreground "#008080"))) "face for 5 spaces" :group 'minesweeper-faces)
 
 (defface minesweeper-6
-  '((t (:foreground "#FF8000"))) "face for 6 spaces")
+  '((t (:foreground "#FF8000"))) "face for 6 spaces" :group 'minesweeper-faces)
 
 (defface minesweeper-7
-  '((t (:foreground "#A06000"))) "face for 7 spaces")
+  '((t (:foreground "#A06000"))) "face for 7 spaces" :group 'minesweeper-faces)
 
 (defface minesweeper-8
-  '((t (:foreground "#FF0000"))) "face for 8 spaces")
+  '((t (:foreground "#FF0000"))) "face for 8 spaces" :group 'minesweeper-faces)
 
 (defface minesweeper-neighbor
-  '((t (:background "#C0FFFF"))) "face for the neighbors of point")
+  '((t (:background "#C0FFFF"))) "face for the neighbors of point" :group 'minesweeper-faces)
 
 (defface minesweeper-explode
-  '((t (:background "#FF0000"))) "face for a clicked-on mine")
+  '((t (:background "#FF0000"))) "face for a clicked-on mine" :group 'minesweeper-faces)
 
 (defface minesweeper-mismarked
-  '((t (:background "#888888"))) "face for mismarked mines, at end of game")
+  '((t (:background "#888888"))) "face for mismarked mines, at end of game" :group 'minesweeper-faces)
 
 (defvar *minesweeper-board-width* nil
   "The number of columns on the Minesweeper field.")
