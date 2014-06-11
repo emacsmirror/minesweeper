@@ -217,6 +217,20 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
 (defvar *minesweeper-game-over* nil
   "t if the user has selected a mine or selected all the empty squares, nil otherwise.")
 
+(defmacro minesweeper-for (var init end &rest body)
+  "Helper function. executes 'body repeatedly, with 'var assigned values starting at 'init, and ending at 'end, increasing by one each iteration."
+  `(let ((,var ,init)
+	 (end-val ,end))
+     (while (<= ,var end-val)
+       ,@body
+       (setq ,var (1+ ,var)))))
+
+(defmacro minesweeper-debug (&rest body)
+  "If *minesweeper-debug* is 't, log ,@body as a string to the buffer named 'debug'"
+  `(when *minesweeper-debug*
+     (print (concat ,@body)
+	    (get-buffer-create "debug"))))
+
 (defun minesweeper-move-end-of-field ()
   "Move to the last cell in this row of the minefield."
   (interactive)
@@ -644,20 +658,6 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
           " and lost "
 	  (number-to-string *minesweeper-losses*)
 	  ". "))
-
-(defmacro minesweeper-for (var init end &rest body)
-  "Helper function. executes 'body repeatedly, with 'var assigned values starting at 'init, and ending at 'end, increasing by one each iteration."
-  `(let ((,var ,init)
-	 (end-val ,end))
-     (while (<= ,var end-val)
-       ,@body
-       (setq ,var (1+ ,var)))))
-
-(defmacro minesweeper-debug (&rest body)
-  "If *minesweeper-debug* is 't, log ,@body as a string to the buffer named 'debug'"
-  `(when *minesweeper-debug*
-     (print (concat ,@body)
-	    (get-buffer-create "debug"))))
 
 (defun minesweeper-get-integer (&optional message default)
   "Reads one nonzero integer from the minibuffer."
