@@ -3,7 +3,7 @@
 ;; Copyright 2010-2012, 2014 Zachary Kanfer
 
 ;; Author: Zachary Kanfer <zkanfer@gmail.com>
-;; Version: 2012.01.29
+;; Version: 2012.07.02
 ;; URL: https://bitbucket.org/zck/minesweeper.el
 
 ;; This file is not part of GNU Emacs
@@ -53,6 +53,7 @@
 (defvar *minesweeper-idle-delay* 0.0625
   "The time Emacs must be idle before highlighting the neigbors of point.")
 
+;;;###autoload
 (defun minesweeper () "Major mode for playing Minesweeper in Emacs.
 
 There's a field of squares; each square may hold a mine. Your goal is to uncover all the squares that don't have mines. If a revealed square doesn't have a mine, you'll see how many mines are in the eight neighboring squares. You may mark squares, which protects them from accidentally being revealed.
