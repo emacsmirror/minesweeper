@@ -10,7 +10,7 @@ There are two ways to install minesweeper.el:
     1. Follow the instructions under "installing" on MELPA's [getting started](http://melpa.milkbox.net/#/getting-started) page.
     2. Restart Emacs, to make it reload your init file.
     3. Run `M-x package-list-packages`.
-    4. Find this package in the package list, and move point (the cursor) there. It should one of the first few in the list.
+    4. Find this package in the package list, and move point (the cursor) there.
     5. Press `i` to mark the package for installation.
     6. Press `x` to execute the commands and install the marked package.
 
