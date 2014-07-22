@@ -21,6 +21,22 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+;;; Commentary:
+
+;; This program is an implementation of minesweeper for Emacs.
+
+;; There is a minefield. There are squares with mines, and squares without mines.
+;; Your goal is to reveal all the squares with mines. If you reveal a mine, it explodes,
+;; and the game is over!
+
+;; To begin playing, call `M-x minesweeper`. Then use the arrow keys,
+;; p/b/n/f, or C-p/C-n/C-b/C-f to move around in the minefield.
+
+;; You can reveal a square with space, enter, x, or by clicking on it.
+;; You can mark a square as a mine by pressing m, or by right-clicking on it. Marked
+;; squares are unable to be revealed until they are unmarked. Unmark squares with m,
+;; or right-clicking.
+;; You can select all the squares around a square by pressing c or middle-clicking.
 
 ;; Keywords: game fun minesweeper inane diversion
 
