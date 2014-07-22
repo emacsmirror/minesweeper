@@ -24,6 +24,6 @@ There are two ways to install minesweeper.el:
 * Point can be moved with the arrow keys, p/n/b/f, or C-p/C-n/C-b/C-f.
 * To reveal squares, either left-click on them, or move point and press space, enter, or `x`.
 * When a square is revealed, if it is not a mine, there will be a number indicating the count of mines in the neighboring eight squares.
-* If a zero mine is revealed, all its neighbors will also be revealed.
+* If a square with no neighboring mines is revealed, all its neighbors will also be revealed.
 * Squares can be marked as having a mine in them. To do this, right-click on the square, or move point to it and press `m`. Marked squares are protected from being revealed by any means.
 * You can choose to reveal all the neighbors of a square by middle-clicking on a square, or moving point there and pressing `c`.
