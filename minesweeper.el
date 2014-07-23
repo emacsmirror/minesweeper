@@ -666,7 +666,7 @@ CLICK is the input event corresponding to the mouse click."
 More specifically: print the revealed minefield and prompt for a new game.
 
 This should be called immediately after selecting the winning or losing square,
-so point is still on that square."
+so point is still on that square.  WON should be whether the user has won the game."
   (setq *minesweeper-game-over* 't)
   (minesweeper-print-field 't)
   (multiple-value-bind (row col) (minesweeper-position)
