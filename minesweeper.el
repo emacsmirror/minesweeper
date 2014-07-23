@@ -339,9 +339,9 @@ It will not place any mines in the square (PROTECT-ROW, PROTECT-COL)."
 				    (minesweeper-hide row col)
 				    (minesweeper-unmark row col)))
   (minesweeper-debug "done setting zeros; now inserting mines")
-  (minesweeper-insert-mines *minesweeper-mines* protect-col protect-row))
+  (minesweeper-insert-mines *minesweeper-mines* protect-row protect-col))
 
-(defun minesweeper-insert-mines (count protect-col protect-row)
+(defun minesweeper-insert-mines (count protect-row protect-col)
   "Insert COUNT mines into the minefield, and build the neighbor count.
 
 There can't be a mine at the square (PROTECT-ROW, PROTECT-COL)"
