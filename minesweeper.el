@@ -25,8 +25,8 @@
 
 ;; This program is an implementation of minesweeper for Emacs.
 
-;; This came consists of a minefield. There are squares with mines, and squares without mines.
-;; The goal is to reveal all squares that do not have a mine. If you reveal a mine, it explodes,
+;; This came consists of a minefield.  There are squares with mines, and squares without mines.
+;; The goal is to reveal all squares that do not have a mine.  If you reveal a mine, it explodes,
 ;; and the game is over!
 
 ;; To begin playing, call `M-x minesweeper`.
@@ -38,9 +38,9 @@
 ;; When a square is revealed, if it is not a mine, there will be a number indicating the count of mines in the neighboring eight squares.
 ;; If a square with no neighboring mines is revealed, all its neighbors will also be revealed.
 
-;; You can mark squares that you think have mines in them. Marked squares are protected
+;; You can mark squares that you think have mines in them.  Marked squares are protected
 ;; from being revealed by any means.
-;; To mark a square, right-click on it, or press `m`. Marked squares can be unmarked the same way.
+;; To mark a square, right-click on it, or press `m`.  Marked squares can be unmarked the same way.
 
 ;; You can choose to reveal all the neighbors of a square by middle-clicking on a square, or moving point there and pressing `c`.
 
@@ -70,7 +70,7 @@
   (define-key minesweeper-mode-map (kbd "s") 'minesweeper-toggle-show-neighbors))
 
 (defvar *minesweeper-idle-timer* nil
-  "The timer used to highlight neighbors")
+  "The timer used to highlight neighbors.")
 
 (defvar *minesweeper-idle-delay* 0.0625
   "The time Emacs must be idle before highlighting the neigbors of point.")
@@ -78,7 +78,11 @@
 ;;;###autoload
 (defun minesweeper () "Major mode for playing Minesweeper in Emacs.
 
-There's a field of squares; each square may hold a mine. Your goal is to uncover all the squares that don't have mines. If a revealed square doesn't have a mine, you'll see how many mines are in the eight neighboring squares. You may mark squares, which protects them from accidentally being revealed.
+There's a field of squares; each square may hold a mine.
+Your goal is to uncover all the squares that don't have mines.
+If a revealed square doesn't have a mine, you'll see how many mines
+are in the eight neighboring squares.
+You may mark squares, which protects them from accidentally being revealed.
 
 \\{minesweeper-mode-map}"
   (interactive)
@@ -137,7 +141,7 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
   "The number of columns on the Minesweeper field.")
 
 (defconst *minesweeper-default-width* 10
-  "The default board width")
+  "The default board width.")
 
 (defvar *minesweeper-board-height* nil
   "The number of rows on the Minesweeper field.")
@@ -149,31 +153,37 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
   "The number of mines on the Minesweeper field.")
 
 (defconst *minesweeper-default-mines* 10
-  "The default number of mines")
+  "The default number of mines.")
 
 (defvar *minesweeper-field* nil
-  "The minefield itself. If a mine is in the square, ?X is stored. Otherwise, the number of mines in neighboring squares is stored. This is a hashtable where the key is a list. The first element of the list is the row, and the second is the column.")
+  "The minefield itself.
+
+If a mine is in the square, ?X is stored.
+Otherwise, the number of mines in neighboring squares is stored.
+
+This is a hashtable where the key is a list.  The first element
+of the list is the row, and the second is the column.")
 
 (defvar *minesweeper-reveals* nil
-  "Holds 't in (row, col) if (row, col) has been revealed")
+  "Holds 't in (row, col) if (row, col) has been revealed.")
 
 (defvar *minesweeper-marks* nil
-  "Holds 't in (row, col) iff (row, col) has been marked. A marked square cannot be chosen.")
+  "Holds 't in (row, col) iff (row, col) has been marked.  A marked square cannot be chosen.")
 
 (defvar *minesweeper-blanks-left* 0
-  "Holds the number of empty squares left. After 'minesweeper-init has been called, the user will win the game when this becomes zero again.")
+  "Holds the number of empty squares left.  After 'minesweeper-init has been called, the user will win the game when this becomes zero again.")
 
 (defvar *minesweeper-debug* nil
-  "when 't, print debugging information.")
+  "When 't, print debugging information.")
 
 (defvar *minesweeper-first-move* 't
-  "If 't, the next move is the first move. So if a mine is selected, move that mine elsewhere")
+  "If 't, the next move is the first move.  So if a mine is selected, move that mine elsewhere.")
 
 (defvar *minesweeper-wins* 0
-  "The number of times the player has won the game this session")
+  "The number of times the player has won the game this session.")
 
 (defvar *minesweeper-losses* 0
-  "The number of times the player has lost the game this session")
+  "The number of times the player has lost the game this session.")
 
 (defvar *minesweeper-game-epoch* nil
   "The time the current game started.")
@@ -185,25 +195,25 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
   (let ((overlay (make-overlay 0 0)))
     (overlay-put overlay 'face 'minesweeper-neighbor)
     overlay)
-  "The overlay to go above point")
+  "The overlay to go above point.")
 
 (defvar *minesweeper-left-overlay*
   (let ((overlay (make-overlay 0 0)))
     (overlay-put overlay 'face 'minesweeper-neighbor)
     overlay)
-  "The overlay to go left of point")
+  "The overlay to go left of point.")
 
 (defvar *minesweeper-right-overlay*
   (let ((overlay (make-overlay 0 0)))
     (overlay-put overlay 'face 'minesweeper-neighbor)
     overlay)
-  "The overlay to go right of point")
+  "The overlay to go right of point.")
 
 (defvar *minesweeper-bottom-overlay*
   (let ((overlay (make-overlay 0 0)))
     (overlay-put overlay 'face 'minesweeper-neighbor)
     overlay)
-  "The overlay to go below point")
+  "The overlay to go below point.")
 
 (defvar *minesweeper-explode-overlay*
   (let ((overlay (make-overlay 0 0)))
@@ -238,10 +248,10 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
   "The hashtable mapping a character to the face it should have.")
 
 (defvar *minesweeper-game-over* nil
-  "t if the user has selected a mine or selected all the empty squares, nil otherwise.")
+  "'t if the user has selected a mine or selected all the empty squares, nil otherwise.")
 
 (defmacro minesweeper-for (var init end &rest body)
-  "Helper function. executes 'body repeatedly, with 'var assigned values starting at 'init, and ending at 'end, increasing by one each iteration."
+  "Helper function.  Loop with VAR assigned values starting at INIT, and ending at END, increasing by one each iteration.  Each iteration, execute BODY."
   `(let ((,var ,init)
 	 (end-val ,end))
      (while (<= ,var end-val)
@@ -249,7 +259,7 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
        (setq ,var (1+ ,var)))))
 
 (defmacro minesweeper-debug (&rest body)
-  "If *minesweeper-debug* is 't, log ,@body as a string to the buffer named 'debug'"
+  "If *minesweeper-debug* is 't, log ,@BODY as a string to the buffer named 'debug'."
   `(when *minesweeper-debug*
      (print (concat ,@body)
 	    (get-buffer-create "debug"))))
@@ -261,7 +271,10 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
   (backward-char))
 
 (defun minesweeper-begin-game (&optional width height mines)
-  "Prompt the user for the minefield size and number of mines, then initialize the game."
+  "Begin the game.
+
+This prompts the user for the minefield size and number of mines.
+Use WIDTH, HEIGHT, and MINES as the default values, but still prompt the user."
   (minesweeper-debug "beginning the game")
   (if (y-or-n-p (concat (number-to-string (or width *minesweeper-board-width* *minesweeper-default-width*))
 			" by "
@@ -284,7 +297,7 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
   (message "Good luck!"))
 
 (defun minesweeper-init (&optional width height mines)
-  "Begin a game of Minesweeper with a board that's 'width by 'height size containing 'mines mines."
+  "Begin a game of Minesweeper with a board that's size WIDTH by HEIGHT containing MINES mines."
   (minesweeper-debug "initializing the game")
   (setq *minesweeper-board-width* (or width *minesweeper-default-width*)
 	*minesweeper-board-height* (or height *minesweeper-default-height*)
@@ -314,7 +327,9 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
 
 
 (defun minesweeper-fill-field (protect-row protect-col)
-  "Fills '*minesweeper-field* with '*minesweeper-mines* mines, and builds the neighbor count. It will not place any mines in the square (protect-row, protect-col)."
+  "Fill 'the field with mines, and build the neighbor count.
+
+It will not place any mines in the square (PROTECT-ROW, PROTECT-COL)."
   (minesweeper-debug "filling the field")
   (minesweeper-for col 0 (1- *minesweeper-board-width*)
 		   (minesweeper-debug "inside outer loop -- col is " (number-to-string col))
@@ -327,7 +342,9 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
   (minesweeper-insert-mines *minesweeper-mines* protect-col protect-row))
 
 (defun minesweeper-insert-mines (count protect-col protect-row)
-  "insert 'count mines into the minefield, and build up the neighbor count. There can't be a mine at the square (protect-col, protect-row)"
+  "Insert COUNT mines into the minefield, and build the neighbor count.
+
+There can't be a mine at the square (PROTECT-ROW, PROTECT-COL)"
   (minesweeper-debug "inserting " (number-to-string count) " mines")
   (let* ((square-count (1- (* *minesweeper-board-width* *minesweeper-board-height*)))
 	 (mines (make-vector square-count (list 0 0)))
@@ -348,13 +365,19 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
 	(minesweeper-inform-around (car ele) (cadr ele))))))
 
 (defun minesweeper-position ()
-    "Return the current position of point as a minesweeper position construct. This construct is a list where the first element is the row value, the second is the col value, and the third is whether the position is in bounds."
+    "Return the current position of point as a minesweeper position construct.
+
+The return value is a list where the first element is the row value, the second is the col value, and the third is whether the position is in bounds."
     (let ((row (1- (line-number-at-pos)))
           (col (current-column)))
       (list row col (minesweeper-in-bounds row col))))
 
 (defun minesweeper-view-mine (row col &optional reveal)
-  "If reveal is true, or if the selected mine has been revealed, returns the value at position (col, row). Otherwise, it returns the character * if the square is marked, the character - if it is not."
+  "Return the visible value at position (ROW, COL).
+
+If REVEAL is true, or if the selected mine has been revealed,
+returns the actual value.  Otherwise, it returns the character *
+if the square is marked, the character - if it is not."
   (minesweeper-debug "called view-mine " (number-to-string col) " " (number-to-string row) " " (if reveal "reveal!" "hide"))
   (cond ((or reveal
 	     (minesweeper-is-revealed row col))
@@ -366,35 +389,35 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
 	 ?-)))
 
 (defun minesweeper-is-mine (row col)
-  "Returns 't iff (row, col) is a mine."
+  "Return 't iff (ROW, COL) is a mine."
   (eq (minesweeper-view-mine row col 't)
       ?X))
 
 (defun minesweeper-set-mine (row col val)
-  "Inserts val into the mine at (col, row)"
+  "Set the value of the (ROW, COL) mine to VAL."
   (puthash (list row col)
 	   val
 	   *minesweeper-field*))
 
 (defun minesweeper-reveal (row col)
-  "Reveals (col, row)."
+  "Reveal (ROW, COL)."
   (puthash (list row col)
 	   't
 	   *minesweeper-reveals*))
 
 (defun minesweeper-hide (row col)
-  "Hides (col, row)."
+  "Hide (ROW, COL)."
   (puthash (list row col)
 	   nil
 	   *minesweeper-reveals*))
 
 (defun minesweeper-is-revealed (row col)
-  "Returns 't if (row, col) is revealed, nil otherwise"
+  "Return 't if (ROW, COL) is revealed, nil otherwise."
   (gethash (list row col)
 	   *minesweeper-reveals*))
 
 (defun minesweeper-mark (row col)
-  "Marks the square (row, col) as having a mine. It can't be selected until it is unmarked"
+  "Mark the square (ROW, COL)."
   (minesweeper-debug "marking square " (number-to-string row) "\t" (number-to-string col))
   (unless (minesweeper-marked row col)
     (puthash (list row col)
@@ -403,7 +426,7 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
     (setq *minesweeper-mark-count* (1+ *minesweeper-mark-count*))))
 
 (defun minesweeper-unmark (row col)
-  "Removes the mark from (row, col). It can now be selected."
+  "Set the square (ROW, COL) as unmarked."
   (when (minesweeper-marked row col)
     (puthash (list row col)
 	     nil
@@ -411,7 +434,7 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
     (setq *minesweeper-mark-count* (1- *minesweeper-mark-count*))))
 
 (defun minesweeper-invert-mark (row col)
-  "If (row, col) is marked, unmark it. Otherwise, mark it."
+  "If (ROW, COL) is marked, unmark it.  Otherwise, mark it."
   (when (and (minesweeper-in-bounds row col)
 	     (not (minesweeper-is-revealed row col)))
     (if (minesweeper-marked row col)
@@ -419,18 +442,18 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
       (minesweeper-mark row col))))
 
 (defun minesweeper-marked (row col)
-  "Returns 't if (row, col) is marked as having a mine, nil otherwise"
+  "Return 't if (ROW, COL) is marked, nil otherwise."
   (gethash (list row col)
 	   *minesweeper-marks*))
 
 (defun minesweeper-inform-around (row col &optional amount)
-  "takes in a square, and increases the values of all its empty neighbors by 'amount"
+  "Increase the value of all squares around (ROW, COL) by AMOUNT."
   (mapc #'(lambda (position)
 	  (minesweeper-++ (car position) (cadr position) amount))
 	(minesweeper-neighbors row col)))
 
 (defun minesweeper-++ (row col &optional amount)
-  "Increments the value at square (row, col), unless the square is a bomb"
+  "Increment the value at square (ROW, COL) by AMOUNT, unless the square is a bomb."
   (let ((val (minesweeper-view-mine row col 't)))
     (when (and (<= ?0 val)
 	       (<= val ?8))
@@ -440,7 +463,7 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
 			       (or amount 1))))))
 
 (defun minesweeper-neighbors (row col)
-  "Returns a list of the neighbors of (row, col)."
+  "Return a list of the neighbors of (ROW, COL)."
   (let ((neighbors nil))
     (minesweeper-for newcol
 		     (max (1- col) 0)
@@ -455,7 +478,12 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
     neighbors))
 
 (defun minesweeper-print-field (&optional reveal)
-  "Print out the minefield, then put point back where it was when the function was called. The origin is displayed as the upper left corner."
+  "Print out the minefield.
+
+If REVEAL is true, then reveal all points, showing even squares that have not
+been revealed by the user.
+
+After printing,  put point back where it was when the function was called."
   (minesweeper-debug "Printing out the field")
   (let ((inhibit-read-only t)
         (pt (point)))
@@ -475,7 +503,7 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
     (goto-char pt)))
 
 (defun minesweeper-refresh-square (row col)
-  "Refreshes the printed value of (row, col)"
+  "Refresh the printed value of (ROW, COL)."
   (minesweeper-debug "starting refresh-square. (row, col) is (" (number-to-string row) ",\t" (number-to-string col) ")")
   (when (minesweeper-in-bounds row col)
     (let ((val (minesweeper-view-mine row col)))
@@ -488,7 +516,7 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
       (forward-char -1))))
 
 (defun minesweeper-insert-value (val)
-  "Outputs val, properly colored, at point."
+  "Output VAL, properly colored, at point."
   (insert-char val 1)
   (add-text-properties (point)
 		       (1- (point))
@@ -496,7 +524,9 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
 			     (minesweeper-get-face val))))
 
 (defun minesweeper-pick (row col)
-  "Reveals the square at position (row, col). If the square is zero,  pick all the neighbors around (col, row)."
+  "Reveal the square at position (ROW, COL).
+
+If the square is zero,  pick all the neighbors around (col, row)."
   (minesweeper-debug "starting pick with args:" (number-to-string row) " " (number-to-string col))
   (unless (or (not (minesweeper-in-bounds row col))
 	      (minesweeper-is-revealed row col)
@@ -533,7 +563,7 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
 
 
 (defun minesweeper-toggle-mark ()
-  "Set the marked status of the current square to the opposite of what it currently is"
+  "Set the marked status of the current square to the opposite of what it currently is."
   (interactive)
   (unless *minesweeper-game-over*
     (multiple-value-bind (row col in-bounds) (minesweeper-position)
@@ -542,7 +572,9 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
         (minesweeper-print-field)))))
 
 (defun minesweeper-toggle-mark-mouse (click)
-  "Set the marked status of the clicked-on square to the opposite of what it currently is."
+  "Invert the marked status of the clicked-on square.
+
+CLICK is the input event corresponding to the mouse click."
   (interactive "e")
   (unless *minesweeper-game-over*
     (let* ((window (elt (cadr click) 0))
@@ -575,7 +607,9 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
       (minesweeper-debug "finishing choose"))))
 
 (defun minesweeper-choose-around ()
-  "Choose all non-marked cells around point. It does not include the cell at point. This is a user-facing function."
+  "Choose all non-marked cells around point.
+
+It does not include the cell at point."
   (interactive)
   (minesweeper-debug "starting choose-around")
   (unless *minesweeper-game-over*
@@ -586,7 +620,9 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
       (minesweeper-debug "finishing choose-round"))))
 
 (defun minesweeper-choose-around-mouse (click)
-  "Choose all the non-marked cells around the one clicked on, not including the one clicked on."
+  "Choose all the non-marked cells around the one clicked on.
+
+CLICK is the input event corresponding to the mouse click."
   (interactive "e")
   (minesweeper-debug "beginning choose-around-mouse")
   (unless *minesweeper-game-over*
@@ -604,7 +640,7 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
   (minesweeper-debug "ending choose-around-mouse"))
 
 (defun minesweeper-pick-around (row col)
-  "Pick all the squares around (col, row) excluding (col, row). This is an internal function."
+  "Pick all the squares around but not including (ROW, COL)."
   (minesweeper-debug "called pick-around " (number-to-string row) " " (number-to-string col))
   (when (minesweeper-neighbors-bounds row col)
     (mapc #'(lambda (position)
@@ -613,7 +649,9 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
 	  (minesweeper-neighbors row col))))
 
 (defun minesweeper-lose-game (row col)
-  "Print the lose-game message and prompt for a new one."
+  "Print the lose-game message and prompt for a new one.
+
+\(ROW, COL) is the square the user clicked on that contained a mine"
   (setq *minesweeper-losses* (1+ *minesweeper-losses*))
   (minesweeper-end-game nil))
 
@@ -623,7 +661,12 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
   (minesweeper-end-game 't))
 
 (defun minesweeper-end-game (won)
-  "End the game: print the revealed minefield, and prompt for a new game. This should be called immediately after selecting the winning or losing square, so point is still on that square."
+  "End the game.
+
+More specifically: print the revealed minefield and prompt for a new game.
+
+This should be called immediately after selecting the winning or losing square,
+so point is still on that square."
   (setq *minesweeper-game-over* 't)
   (minesweeper-print-field 't)
   (multiple-value-bind (row col) (minesweeper-position)
@@ -664,14 +707,14 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
 
 
 (defun minesweeper-game-duration-message ()
-  "Returns the duration the current game has taken as a human-readable string."
+  "Return the duration the current game has taken as a human-readable string."
   (let ((game-duration (time-subtract (current-time) *minesweeper-game-epoch*)))
     (format-seconds "%H, %M, %z%S" (+ (* (car game-duration)
 					 (expt 2 16))
 				      (cadr game-duration)))))
 
 (defun minesweeper-record-message ()
-  "Returns the number of wins and losses formatted as a human-readable string."
+  "Return the number of wins and losses formatted as a human-readable string."
   (concat "You've won "
 	  (number-to-string *minesweeper-wins*)
 	  " game"
@@ -683,7 +726,10 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
 	  ". "))
 
 (defun minesweeper-get-integer (&optional message default)
-  "Reads one nonzero integer from the minibuffer."
+  "Read one nonzero integer from the minibuffer.
+
+Use MESSAGE as the prompt message.
+Default the input to DEFAULT"
   (setq default (cond ((not default)
 		       "0")
 		      ((integerp default)
@@ -734,11 +780,13 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
                             (get-buffer "minesweeper")))))))))
 
 (defun minesweeper-get-face (val)
-  "Gets the face for the character value of val. Proper inputs are ?0 through ?8, ?- and ?*"
+  "Get the face for the character value of VAL.
+
+Proper inputs are ?0 through ?8, ?- and ?*"
   (gethash val *minesweeper-faces*))
 
 (defun minesweeper-toggle-show-neighbors ()
-  "Toggles whether neighbors are shown."
+  "Toggle whether neighbors are shown."
   (interactive)
   (if *minesweeper-idle-timer*
       (progn (cancel-timer *minesweeper-idle-timer*)
@@ -749,13 +797,16 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
 							'minesweeper-show-neighbors))))
 
 (defun minesweeper-reset-neighbor-overlays ()
-  "Move all the neighbor overlays to the beginning of the buffer. They won't be seen."
+  "Move all the neighbor overlays to the beginning of the buffer.
+
+Moving them there ensures they won't be seen."
   (move-overlay *minesweeper-top-overlay* 0 0 (get-buffer "minesweeper"))
   (move-overlay *minesweeper-left-overlay* 0 0 (get-buffer "minesweeper"))
   (move-overlay *minesweeper-right-overlay* 0 0 (get-buffer "minesweeper"))
   (move-overlay *minesweeper-bottom-overlay* 0 0 (get-buffer "minesweeper")))
 
 (defun minesweeper-in-bounds (row col)
+  "Return 't iff (ROW, COL) is inside the bounds of the minefield."
   (minesweeper-debug "Called in-bounds with arguments " (number-to-string col) "\t" (number-to-string row) "\treturning " (if (and (< -1 col)
        (< col *minesweeper-board-width*)
        (< -1 row)
@@ -766,7 +817,9 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
        (< row *minesweeper-board-height*)))
 
 (defun minesweeper-neighbors-bounds (row col)
-  "Returns 't iff (row, col) has at least one neighbor in the minefield. I.e., (row, col) is in the minefield, or it neighbors the minefield."
+  "Return 't iff (ROW, COL) has at least one neighbor in the minefield.
+
+I.e., (row, col) is in the minefield, or it neighbors the minefield."
     (and (<= -1 col) ;;Right now, you can't get negative rows or columns. Maybe in the future?
        (<= col *minesweeper-board-width*)
        (<= -1 row)
