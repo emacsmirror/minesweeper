@@ -240,14 +240,6 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
 (defvar *minesweeper-game-over* nil
   "t if the user has selected a mine or selected all the empty squares, nil otherwise.")
 
-(defmacro minesweeper-for (var init end &rest body)
-  "Helper function. executes 'body repeatedly, with 'var assigned values starting at 'init, and ending at 'end, increasing by one each iteration."
-  `(let ((,var ,init)
-	 (end-val ,end))
-     (while (<= ,var end-val)
-       ,@body
-       (setq ,var (1+ ,var)))))
-
 (defmacro minesweeper-debug (&rest body)
   "If *minesweeper-debug* is 't, log ,@body as a string to the buffer named 'debug'"
   `(when *minesweeper-debug*
@@ -442,16 +434,14 @@ There's a field of squares; each square may hold a mine. Your goal is to uncover
 (defun minesweeper-neighbors (row col)
   "Returns a list of the neighbors of (row, col)."
   (let ((neighbors nil))
-    (minesweeper-for newcol
-		     (max (1- col) 0)
-		     (min (1+ col) (1- *minesweeper-board-width*))
-		     (minesweeper-for newrow
-				      (max (1- row) 0)
-				      (min (1+ row) (1- *minesweeper-board-height*))
-				      (when (not (and (eq newcol col)
-						      (eq newrow row)))
-					(push (list newrow newcol)
-					      neighbors))))
+    (dolist (newcol (number-sequence (max (1- col) 0)
+                                     (min (1+ col) (1- *minesweeper-board-width*))))
+      (dolist (newrow (number-sequence (max (1- row) 0)
+                                       (min (1+ row) (1- *minesweeper-board-height*))))
+        (when (not (and (eq newcol col)
+                        (eq newrow row)))
+          (push (list newrow newcol)
+                neighbors))))
     neighbors))
 
 (defun minesweeper-print-field (&optional reveal)
