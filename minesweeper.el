@@ -48,7 +48,7 @@
 
 ;;; Code:
 
-(require 'cl)
+(require 'cl-lib)
 
 (define-derived-mode minesweeper-mode special-mode "minesweeper-mode"
   (define-key minesweeper-mode-map (kbd "SPC") 'minesweeper-choose)
