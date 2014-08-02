@@ -25,7 +25,7 @@
 
 ;; This program is an implementation of minesweeper for Emacs.
 
-;; This came consists of a minefield.  There are squares with mines, and squares without mines.
+;; This game consists of a minefield.  There are squares with mines, and squares without mines.
 ;; The goal is to reveal all squares that do not have a mine.  If you reveal a mine, it explodes,
 ;; and the game is over!
 
@@ -48,7 +48,7 @@
 
 ;;; Code:
 
-(require 'cl)
+(require 'cl-lib)
 
 (define-derived-mode minesweeper-mode special-mode "minesweeper-mode"
   (define-key minesweeper-mode-map (kbd "SPC") 'minesweeper-choose)
@@ -251,14 +251,6 @@ of the list is the row, and the second is the column.")
 (defvar *minesweeper-game-over* nil
   "'t if the user has selected a mine or selected all the empty squares, nil otherwise.")
 
-(defmacro minesweeper-for (var init end &rest body)
-  "Helper function.  Loop with VAR assigned values starting at INIT, and ending at END, increasing by one each iteration.  Each iteration, execute BODY."
-  `(let ((,var ,init)
-	 (end-val ,end))
-     (while (<= ,var end-val)
-       ,@body
-       (setq ,var (1+ ,var)))))
-
 (defmacro minesweeper-debug (&rest body)
   "If *minesweeper-debug* is 't, log ,@BODY as a string to the buffer named 'debug'."
   `(when *minesweeper-debug*
@@ -332,13 +324,13 @@ Use WIDTH, HEIGHT, and MINES as the default values, but still prompt the user."
 
 It will not place any mines in the square (PROTECT-ROW, PROTECT-COL)."
   (minesweeper-debug "filling the field")
-  (minesweeper-for col 0 (1- *minesweeper-board-width*)
-		   (minesweeper-debug "inside outer loop -- col is " (number-to-string col))
-		   (minesweeper-for row 0 (1- *minesweeper-board-height*)
-				    (minesweeper-debug "inside inner loop -- setting up mine " (number-to-string col) " " (number-to-string row))
-				    (minesweeper-set-mine row col ?0)
-				    (minesweeper-hide row col)
-				    (minesweeper-unmark row col)))
+  (dotimes (col *minesweeper-board-width*)
+    (minesweeper-debug "inside outer loop -- col is " (number-to-string col))
+    (dotimes (row *minesweeper-board-height*)
+      (minesweeper-debug "inside inner loop -- setting up mine " (number-to-string col) " " (number-to-string row))
+      (minesweeper-set-mine row col ?0)
+      (minesweeper-hide row col)
+      (minesweeper-unmark row col)))
   (minesweeper-debug "done setting zeros; now inserting mines")
   (minesweeper-insert-mines *minesweeper-mines* protect-row protect-col))
 
@@ -350,13 +342,13 @@ There can't be a mine at the square (PROTECT-ROW, PROTECT-COL)"
   (let* ((square-count (1- (* *minesweeper-board-width* *minesweeper-board-height*)))
 	 (mines (make-vector square-count (list 0 0)))
 	 (pos 0))
-    (minesweeper-for col 0 (1- *minesweeper-board-width*)
-		     (minesweeper-for row 0 (1- *minesweeper-board-height*)
-				      (unless (and (eq row protect-row)
-						   (eq col protect-col))
-					(minesweeper-debug "setting " (number-to-string col) "\t" (number-to-string row))
-					(aset mines pos (list row col))
-					(setq pos (1+ pos)))))
+    (dotimes (col *minesweeper-board-width*)
+      (dotimes (row *minesweeper-board-height*)
+        (unless (and (eq row protect-row)
+                     (eq col protect-col))
+          (minesweeper-debug "setting " (number-to-string col) "\t" (number-to-string row))
+          (aset mines pos (list row col))
+          (setq pos (1+ pos)))))
     (dotimes (i count)
       (let* ((rand (random (- square-count i)))
 	     (ele (aref mines rand)))
@@ -466,16 +458,15 @@ if the square is marked, the character - if it is not."
 (defun minesweeper-neighbors (row col)
   "Return a list of the neighbors of (ROW, COL)."
   (let ((neighbors nil))
-    (minesweeper-for newcol
-		     (max (1- col) 0)
-		     (min (1+ col) (1- *minesweeper-board-width*))
-		     (minesweeper-for newrow
-				      (max (1- row) 0)
-				      (min (1+ row) (1- *minesweeper-board-height*))
-				      (when (not (and (eq newcol col)
-						      (eq newrow row)))
-					(push (list newrow newcol)
-					      neighbors))))
+    (dolist (newcol (number-sequence (1- col)
+                                     (1+ col)))
+      (dolist (newrow (number-sequence (1- row)
+                                       (1+ row)))
+        (when (and (minesweeper-in-bounds newrow newcol)
+                   (not (and (eq newcol col)
+                             (eq newrow row))))
+          (push (list newrow newcol)
+                neighbors))))
     neighbors))
 
 (defun minesweeper-print-field (&optional reveal)
@@ -489,10 +480,10 @@ After printing,  put point back where it was when the function was called."
   (let ((inhibit-read-only t)
         (pt (point)))
     (erase-buffer)
-    (minesweeper-for row 0 (1- *minesweeper-board-height*)
-		     (minesweeper-for col 0 (1- *minesweeper-board-width*)
-				      (minesweeper-insert-value (minesweeper-view-mine row col reveal)))
-		     (newline))
+    (dotimes (row *minesweeper-board-height*)
+      (dotimes (col *minesweeper-board-width*)
+        (minesweeper-insert-value (minesweeper-view-mine row col reveal)))
+      (newline))
     (unless reveal
       (insert-char ?\s *minesweeper-board-width*) ;;insert a row below the field for choosing neighbors.
       (newline)
@@ -680,19 +671,19 @@ so point is still on that square.  WON should be whether the user has won the ga
                         point
                         (1+ point)
                         (get-buffer "minesweeper")))
-        (minesweeper-for newrow 0 *minesweeper-board-height*
-                         (minesweeper-for newcol 0 *minesweeper-board-width*
-                                          (when (and (minesweeper-marked newrow newcol)
-                                                     (not (minesweeper-is-mine newrow newcol)))
-                                            (let ((pt (+ (* newrow
-                                                            (1+ *minesweeper-board-height*))
-                                                         newcol
-                                                         1)))
-                                              (minesweeper-debug "(" (number-to-string newrow) ", " (number-to-string newcol) ") is mismarked.")
-                                              (move-overlay (copy-overlay *minesweeper-mismarked-overlay*)
-                                                            pt
-                                                            (1+ pt)
-                                                            (get-buffer "minesweeper"))))))))
+        (dotimes (newrow *minesweeper-board-height*)
+          (dotimes (newcol *minesweeper-board-width*)
+            (when (and (minesweeper-marked newrow newcol)
+                       (not (minesweeper-is-mine newrow newcol)))
+              (let ((pt (+ (* newrow
+                              (1+ *minesweeper-board-height*))
+                           newcol
+                           1)))
+                (minesweeper-debug "(" (number-to-string newrow) ", " (number-to-string newcol) ") is mismarked.")
+                (move-overlay (copy-overlay *minesweeper-mismarked-overlay*)
+                              pt
+                              (1+ pt)
+                              (get-buffer "minesweeper"))))))))
   (when (y-or-n-p (if won
                       (concat "Congrats! You've won in "
                               (minesweeper-game-duration-message)
