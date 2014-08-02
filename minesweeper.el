@@ -64,6 +64,7 @@
   (define-key minesweeper-mode-map (kbd "p") 'previous-line)
   (define-key minesweeper-mode-map (kbd "C-p") 'previous-line)
   (define-key minesweeper-mode-map (kbd "a") 'move-beginning-of-line)
+  (define-key minesweeper-mode-map (kbd "C-e") 'minesweeper-move-end-of-field)
   (define-key minesweeper-mode-map (kbd "e") 'minesweeper-move-end-of-field)
   (define-key minesweeper-mode-map (kbd "c") 'minesweeper-choose-around)
   (define-key minesweeper-mode-map [mouse-2] 'minesweeper-choose-around-mouse)
