@@ -59,8 +59,8 @@
   (define-key minesweeper-mode-map [mouse-3] 'minesweeper-toggle-mark-mouse)
   (define-key minesweeper-mode-map (kbd "b") 'backward-char)
   (define-key minesweeper-mode-map (kbd "f") 'forward-char)
-  (define-key minesweeper-mode-map (kbd "C-n") 'next-line)
-  (define-key minesweeper-mode-map (kbd "n") 'next-line)
+  (define-key minesweeper-mode-map (kbd "C-n") 'minesweeper-next-line)
+  (define-key minesweeper-mode-map (kbd "n") 'minesweeper-next-line)
   (define-key minesweeper-mode-map (kbd "p") 'previous-line)
   (define-key minesweeper-mode-map (kbd "C-p") 'previous-line)
   (define-key minesweeper-mode-map (kbd "a") 'move-beginning-of-line)
@@ -262,6 +262,17 @@ of the list is the row, and the second is the column.")
   (interactive)
   (move-end-of-line nil)
   (backward-char))
+
+(defun minesweeper-next-line ()
+  "Move to the next line in the minefield.
+
+If point is already at the last line of the minefield, stay where it is."
+  (interactive)
+  (when (< (line-number-at-pos)
+           *minesweeper-board-height*)
+    (let ((column (current-column)));; flycheck bitches if you use next-line.
+      (forward-line) ;; even though that gets rid of this boilerplate.
+      (forward-char column))))
 
 (defun minesweeper-begin-game (&optional width height mines)
   "Begin the game.
