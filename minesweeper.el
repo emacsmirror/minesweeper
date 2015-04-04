@@ -546,7 +546,7 @@ If the square is zero,  pick all the neighbors around (col, row)."
       (let ((to-reveal (list (list row col))))
         (minesweeper-debug "The user didn't pick an X")
         (while to-reveal
-          (multiple-value-bind (cur-row cur-col) (pop to-reveal)
+          (cl-multiple-value-bind (cur-row cur-col) (pop to-reveal)
             (minesweeper-debug "View-mine says " (number-to-string cur-col) ", " (number-to-string cur-row) " mine = " (make-string 1 (minesweeper-view-mine cur-row cur-col 't)))
             (unless (or (minesweeper-is-revealed cur-row cur-col)
                         (minesweeper-marked cur-row cur-col))
@@ -569,7 +569,7 @@ If the square is zero,  pick all the neighbors around (col, row)."
   "Set the marked status of the current square to the opposite of what it currently is."
   (interactive)
   (unless *minesweeper-game-over*
-    (multiple-value-bind (row col in-bounds) (minesweeper-position)
+    (cl-multiple-value-bind (row col in-bounds) (minesweeper-position)
       (when in-bounds
         (minesweeper-invert-mark row col)
         (minesweeper-print-field)))))
@@ -601,7 +601,7 @@ CLICK is the input event corresponding to the mouse click."
   (unless *minesweeper-game-epoch*
     (setq *minesweeper-game-epoch* (current-time)))
   (unless *minesweeper-game-over*
-    (multiple-value-bind (row col in-bounds) (minesweeper-position)
+    (cl-multiple-value-bind (row col in-bounds) (minesweeper-position)
       (when in-bounds
         (catch 'game-end (minesweeper-pick row col)
                (if (eq (minesweeper-view-mine row col) ?0)
@@ -616,7 +616,7 @@ It does not include the cell at point."
   (interactive)
   (minesweeper-debug "starting choose-around")
   (unless *minesweeper-game-over*
-    (multiple-value-bind (row col) (minesweeper-position)
+    (cl-multiple-value-bind (row col) (minesweeper-position)
       (when (minesweeper-neighbors-bounds row col)
         (catch 'game-end (minesweeper-pick-around row col)
                (minesweeper-print-field)))
@@ -672,7 +672,7 @@ This should be called immediately after selecting the winning or losing square,
 so point is still on that square.  WON should be whether the user has won the game."
   (setq *minesweeper-game-over* 't)
   (minesweeper-print-field 't)
-  (multiple-value-bind (row col) (minesweeper-position)
+  (cl-multiple-value-bind (row col) (minesweeper-position)
       (unless won
         (let ((point (+ (* row
                            (1+ *minesweeper-board-width*)) ;;the new line at the end of the board counts as a character
@@ -758,7 +758,7 @@ Default the input to DEFAULT"
   (minesweeper-reset-neighbor-overlays)
   (when (equal "minesweeper"
 	       (buffer-name (current-buffer)))
-    (multiple-value-bind (row col) (minesweeper-position)
+    (cl-multiple-value-bind (row col) (minesweeper-position)
       (let ((point (point)))
         (when (minesweeper-neighbors-bounds row col)
           (when (> row 0) ;; "top" overlay
