@@ -57,8 +57,10 @@
   (define-key minesweeper-mode-map [mouse-1] 'minesweeper-choose)
   (define-key minesweeper-mode-map (kbd "m") 'minesweeper-toggle-mark)
   (define-key minesweeper-mode-map [mouse-3] 'minesweeper-toggle-mark-mouse)
-  (define-key minesweeper-mode-map (kbd "b") 'backward-char)
-  (define-key minesweeper-mode-map (kbd "f") 'forward-char)
+  (define-key minesweeper-mode-map (kbd "C-b") 'minesweeper-backward-char)
+  (define-key minesweeper-mode-map (kbd "b") 'minesweeper-backward-char)
+  (define-key minesweeper-mode-map (kbd "C-f") 'minesweeper-forward-char)
+  (define-key minesweeper-mode-map (kbd "f") 'minesweeper-forward-char)
   (define-key minesweeper-mode-map (kbd "C-n") 'minesweeper-next-line)
   (define-key minesweeper-mode-map (kbd "n") 'minesweeper-next-line)
   (define-key minesweeper-mode-map (kbd "p") 'previous-line)
@@ -262,6 +264,19 @@ of the list is the row, and the second is the column.")
   (interactive)
   (move-end-of-line nil)
   (backward-char))
+
+(defun minesweeper-forward-char ()
+  "Move to the next character, unless that move would take us to the end of the line."
+  (interactive)
+  (forward-char)
+  (when (eolp)
+    (backward-char)))
+
+(defun minesweeper-backward-char ()
+  "Move to the previous character, unless that move would take us to the previous line."
+  (interactive)
+  (unless (bolp)
+    (backward-char)))
 
 (defun minesweeper-next-line ()
   "Move to the next line in the minefield.
