@@ -91,11 +91,6 @@ You may mark squares, which protects them from accidentally being revealed.
   (interactive)
   (switch-to-buffer "minesweeper")
   (minesweeper-mode)
-  (when *minesweeper-idle-timer*
-    (cancel-timer *minesweeper-idle-timer*))
-  (setq *minesweeper-idle-timer* (run-with-idle-timer *minesweeper-idle-delay*
-						      t
-						      'minesweeper-show-neighbors))
   (minesweeper-begin-game))
 
 (defface minesweeper-blank
@@ -313,6 +308,12 @@ Use WIDTH, HEIGHT, and MINES as the default values, but still prompt the user."
                              2)
 		   (1+ *minesweeper-board-width*))
 		(ceiling (/ (float *minesweeper-board-width*) 2))))
+  (when *minesweeper-idle-timer*
+    (cancel-timer *minesweeper-idle-timer*)
+    (setq *minesweeper-idle-timer* nil))
+  (setq *minesweeper-idle-timer* (run-with-idle-timer *minesweeper-idle-delay*
+						      t
+						      'minesweeper-show-neighbors))
   (message "Good luck!"))
 
 (defun minesweeper-init (&optional width height mines)
