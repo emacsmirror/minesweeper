@@ -1,10 +1,12 @@
-# minesweeper.el #
+# minesweeper #
 
 This is an implementation of Minesweeper in Emacs.
 
+There's a [bug tracker](https://todo.sr.ht/~zck/minesweeper).
+
 ### Installing minesweeper.el ###
 
-There are two ways to install minesweeper.el:
+There are two ways to install minesweeper:
 
 1. **[MELPA](http://melpa.milkbox.net/)** -- a package manager for emacs. This is the recommended way to install minesweeper.el
     1. Follow the instructions under "installing" on MELPA's [getting started](http://melpa.milkbox.net/#/getting-started) page.
