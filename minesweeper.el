@@ -4,7 +4,7 @@
 
 ;; Author: Zachary Kanfer <zkanfer@gmail.com>
 ;; Version: 2012.07.02
-;; URL: https://bitbucket.org/zck/minesweeper.el
+;; URL: https://hg.sr.ht/~zck/minesweeper
 
 ;; This file is not part of GNU Emacs
 
@@ -23,7 +23,7 @@
 
 ;;; Commentary:
 
-;; This program is an implementation of minesweeper for Emacs.
+;; This program is an implementation of minesweeper for Emacs.  Its source repo lives at https://hg.sr.ht/~zck/minesweeper .
 
 ;; This game consists of a minefield.  There are squares with mines, and squares without mines.
 ;; The goal is to reveal all squares that do not have a mine.  If you reveal a mine, it explodes,
