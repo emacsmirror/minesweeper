@@ -8,8 +8,8 @@ There's a [bug tracker](https://todo.sr.ht/~zck/minesweeper).
 
 There are two ways to install minesweeper:
 
-1. **[MELPA](http://melpa.milkbox.net/)** -- a package manager for emacs. This is the recommended way to install minesweeper.el
-    1. Follow the instructions under "installing" on MELPA's [getting started](http://melpa.milkbox.net/#/getting-started) page.
+1. **[MELPA](https://melpa.org/#/minesweeper)** -- a package manager for emacs. This is the recommended way to install minesweeper.el
+    1. Follow the instructions under "installing" on MELPA's [getting started](https://melpa.org/#/getting-started) page.
     2. Restart Emacs, to make it reload your init file.
     3. Run `M-x package-list-packages`.
     4. Find this package in the package list, and move point (the cursor) there.
